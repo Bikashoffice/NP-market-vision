@@ -5,8 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartUploadAnalysis } from "@/components/ChartUploadAnalysis";
 import { MarketResearch } from "@/components/MarketResearch";
 import { TopGainersLosers } from "@/components/TopGainersLosers";
+import { AllStocksTable } from "@/components/AllStocksTable";
 import { PredictionDashboard } from "@/components/PredictionDashboard";
-import { TrendingUp, TrendingDown, BarChart3, Search, Upload } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart3, Search, Upload, Database } from "lucide-react";
 
 const Index = () => {
   return (
@@ -36,7 +37,7 @@ const Index = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="dashboard" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <BarChart3 className="w-4 h-4" />
               <span>Dashboard</span>
@@ -52,6 +53,10 @@ const Index = () => {
             <TabsTrigger value="top-movers" className="flex items-center space-x-2">
               <TrendingUp className="w-4 h-4" />
               <span>Top Movers</span>
+            </TabsTrigger>
+            <TabsTrigger value="all-stocks" className="flex items-center space-x-2">
+              <Database className="w-4 h-4" />
+              <span>All Stocks</span>
             </TabsTrigger>
           </TabsList>
 
@@ -69,6 +74,10 @@ const Index = () => {
 
           <TabsContent value="top-movers" className="space-y-6">
             <TopGainersLosers />
+          </TabsContent>
+
+          <TabsContent value="all-stocks" className="space-y-6">
+            <AllStocksTable />
           </TabsContent>
         </Tabs>
       </div>

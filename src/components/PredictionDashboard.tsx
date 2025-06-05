@@ -9,13 +9,13 @@ export const PredictionDashboard = () => {
   const [predictions, setPredictions] = useState<any[]>([]);
 
   useEffect(() => {
-    // Mock prediction data
+    // Updated prediction data with current stock prices from the market data
     setPredictions([
       {
         symbol: 'NABIL',
-        currentPrice: 1245.50,
-        predictedPrice: 1380.00,
-        change: 10.8,
+        currentPrice: 492.37, // Updated current price
+        predictedPrice: 520.00,
+        change: 5.6,
         confidence: 78,
         timeframe: '2-4 weeks',
         trend: 'bullish',
@@ -23,8 +23,8 @@ export const PredictionDashboard = () => {
       },
       {
         symbol: 'NICA',
-        currentPrice: 845.20,
-        predictedPrice: 920.00,
+        currentPrice: 353.75, // Updated current price
+        predictedPrice: 385.00,
         change: 8.9,
         confidence: 72,
         timeframe: '3-5 weeks',
@@ -32,14 +32,34 @@ export const PredictionDashboard = () => {
         factors: ['Fintech partnerships', 'Growing remittance business', 'Good dividend yield']
       },
       {
-        symbol: 'HIDCL',
-        currentPrice: 315.80,
-        predictedPrice: 295.00,
+        symbol: 'EBL',
+        currentPrice: 653.07, // Updated current price
+        predictedPrice: 680.00,
+        change: 4.1,
+        confidence: 75,
+        timeframe: '2-3 weeks',
+        trend: 'bullish',
+        factors: ['Strong digital banking growth', 'Expanding branch network', 'Improved loan portfolio']
+      },
+      {
+        symbol: 'RFPL',
+        currentPrice: 524.60, // Current top gainer
+        predictedPrice: 490.00,
         change: -6.6,
         confidence: 65,
         timeframe: '1-3 weeks',
         trend: 'bearish',
-        factors: ['Seasonal power generation', 'Grid connectivity issues', 'Weather dependency']
+        factors: ['Profit booking after rally', 'Seasonal power generation', 'Market correction expected']
+      },
+      {
+        symbol: 'BPCL',
+        currentPrice: 632.10, // Current top gainer
+        predictedPrice: 600.00,
+        change: -5.1,
+        confidence: 68,
+        timeframe: '2-4 weeks',
+        trend: 'bearish',
+        factors: ['High valuation concerns', 'Competition pressure', 'Margin compression']
       }
     ]);
   }, []);
@@ -66,6 +86,10 @@ export const PredictionDashboard = () => {
     }
   };
 
+  const bullishCount = predictions.filter(p => p.trend === 'bullish').length;
+  const bearishCount = predictions.filter(p => p.trend === 'bearish').length;
+  const avgConfidence = Math.round(predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length);
+
   return (
     <div className="space-y-6">
       {/* Overview Cards */}
@@ -75,7 +99,7 @@ export const PredictionDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-green-600 text-sm font-medium">Bullish Predictions</p>
-                <p className="text-2xl font-bold text-green-800">2</p>
+                <p className="text-2xl font-bold text-green-800">{bullishCount}</p>
               </div>
               <TrendingUp className="w-8 h-8 text-green-500" />
             </div>
@@ -87,7 +111,7 @@ export const PredictionDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-red-600 text-sm font-medium">Bearish Predictions</p>
-                <p className="text-2xl font-bold text-red-800">1</p>
+                <p className="text-2xl font-bold text-red-800">{bearishCount}</p>
               </div>
               <TrendingDown className="w-8 h-8 text-red-500" />
             </div>
@@ -99,7 +123,7 @@ export const PredictionDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-blue-600 text-sm font-medium">Avg. Confidence</p>
-                <p className="text-2xl font-bold text-blue-800">72%</p>
+                <p className="text-2xl font-bold text-blue-800">{avgConfidence}%</p>
               </div>
               <BarChart3 className="w-8 h-8 text-blue-500" />
             </div>
@@ -110,7 +134,7 @@ export const PredictionDashboard = () => {
       {/* Predictions List */}
       <Card>
         <CardHeader>
-          <CardTitle>AI Predictions Dashboard</CardTitle>
+          <CardTitle>AI Predictions Dashboard - Updated with Current Prices</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
