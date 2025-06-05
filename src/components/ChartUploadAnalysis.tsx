@@ -4,9 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { Upload, Image, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Upload, Image, TrendingUp, TrendingDown, AlertTriangle, Target, Shield, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ChartAnalysisService } from "@/services/ChartAnalysisService";
 
@@ -46,16 +46,24 @@ export const ChartUploadAnalysis = () => {
     setProgress(0);
 
     try {
-      // Simulate progress
+      // Simulate progress with more realistic steps
+      const progressSteps = [
+        { step: 15, message: "Processing image..." },
+        { step: 35, message: "Identifying chart patterns..." },
+        { step: 55, message: "Analyzing technical indicators..." },
+        { step: 75, message: "Calculating support/resistance..." },
+        { step: 90, message: "Generating recommendations..." }
+      ];
+
+      let currentStep = 0;
       const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 500);
+        if (currentStep < progressSteps.length) {
+          setProgress(progressSteps[currentStep].step);
+          currentStep++;
+        } else {
+          clearInterval(progressInterval);
+        }
+      }, 600);
 
       const result = await ChartAnalysisService.analyzeChart(selectedImage);
       
@@ -65,7 +73,7 @@ export const ChartUploadAnalysis = () => {
 
       toast({
         title: "Analysis Complete",
-        description: "Chart has been successfully analyzed",
+        description: "Professional chart analysis completed successfully",
       });
     } catch (error) {
       toast({
@@ -80,27 +88,27 @@ export const ChartUploadAnalysis = () => {
   };
 
   const getPredictionIcon = (prediction: string) => {
-    if (prediction.toLowerCase().includes('bullish') || prediction.toLowerCase().includes('up')) {
-      return <TrendingUp className="w-5 h-5 text-green-500" />;
-    } else if (prediction.toLowerCase().includes('bearish') || prediction.toLowerCase().includes('down')) {
-      return <TrendingDown className="w-5 h-5 text-red-500" />;
+    if (prediction.toLowerCase().includes('bullish') || prediction.toLowerCase().includes('breakout')) {
+      return <TrendingUp className="w-6 h-6 text-green-500" />;
+    } else if (prediction.toLowerCase().includes('bearish') || prediction.toLowerCase().includes('head')) {
+      return <TrendingDown className="w-6 h-6 text-red-500" />;
     }
-    return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+    return <AlertTriangle className="w-6 h-6 text-yellow-500" />;
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="space-y-6">
       {/* Upload Section */}
-      <Card className="h-fit">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Upload className="w-5 h-5" />
-            <span>Upload Chart Image</span>
+            <span>Professional Chart Analysis</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="chart-upload">Select Chart Image</Label>
+            <Label htmlFor="chart-upload">Upload Chart Image for AI Analysis</Label>
             <Input
               id="chart-upload"
               type="file"
@@ -126,13 +134,13 @@ export const ChartUploadAnalysis = () => {
                 disabled={isAnalyzing}
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
-                {isAnalyzing ? "Analyzing Chart..." : "Analyze Chart"}
+                {isAnalyzing ? "Analyzing Chart..." : "Start Professional Analysis"}
               </Button>
 
               {isAnalyzing && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>Analyzing patterns...</span>
+                    <span>AI is analyzing patterns and indicators...</span>
                     <span>{progress}%</span>
                   </div>
                   <Progress value={progress} className="w-full" />
@@ -144,81 +152,179 @@ export const ChartUploadAnalysis = () => {
           {!imagePreview && (
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
               <Image className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Upload a stock chart image to get AI-powered analysis</p>
-              <p className="text-sm text-gray-400 mt-2">Supports JPG, PNG, and other image formats</p>
+              <p className="text-gray-500 font-medium">Upload a stock chart for comprehensive AI analysis</p>
+              <p className="text-sm text-gray-400 mt-2">
+                Get technical indicators, pattern recognition, support/resistance levels, and trading recommendations
+              </p>
             </div>
           )}
         </CardContent>
       </Card>
 
       {/* Analysis Results */}
-      <Card className="h-fit">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <TrendingUp className="w-5 h-5" />
-            <span>Analysis Results</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {analysis ? (
-            <div className="space-y-6">
-              {/* Prediction Summary */}
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
-                <div className="flex items-center space-x-2 mb-2">
+      {analysis && (
+        <div className="space-y-6">
+          {/* Main Prediction */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                {getPredictionIcon(analysis.prediction)}
+                <span>Chart Analysis Result</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
+                <div className="flex items-center space-x-3 mb-3">
                   {getPredictionIcon(analysis.prediction)}
-                  <span className="font-semibold text-lg">
-                    {analysis.prediction}
-                  </span>
+                  <h3 className="font-bold text-xl">{analysis.prediction}</h3>
                 </div>
-                <p className="text-gray-700">{analysis.summary}</p>
+                <p className="text-gray-700 leading-relaxed">{analysis.summary}</p>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">Rs. {analysis.targetPrice}</div>
+                    <div className="text-sm text-gray-600">Target Price</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">{analysis.confidence}%</div>
+                    <div className="text-sm text-gray-600">Confidence</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-purple-600">{analysis.timeframe}</div>
+                    <div className="text-sm text-gray-600">Time Frame</div>
+                  </div>
+                  <div className="text-center">
+                    <Progress value={analysis.confidence} className="w-full mt-2" />
+                    <div className="text-sm text-gray-600 mt-1">Reliability</div>
+                  </div>
+                </div>
               </div>
+            </CardContent>
+          </Card>
 
-              {/* Technical Indicators */}
-              <div className="space-y-3">
-                <h4 className="font-semibold">Technical Indicators</h4>
+          {/* Technical Indicators Grid */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <TrendingUp className="w-5 h-5" />
+                <span>Technical Indicators Analysis</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {analysis.technicalIndicators?.map((indicator: any, index: number) => (
-                  <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span className="font-medium">{indicator.name}</span>
-                    <span className={`px-2 py-1 rounded text-sm ${
-                      indicator.signal === 'BUY' ? 'bg-green-100 text-green-800' :
-                      indicator.signal === 'SELL' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {indicator.signal}
-                    </span>
+                  <div key={index} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-semibold text-sm">{indicator.name}</span>
+                      <Badge 
+                        variant="outline"
+                        className={
+                          indicator.signal === 'BUY' ? 'border-green-500 text-green-700 bg-green-50' :
+                          indicator.signal === 'SELL' ? 'border-red-500 text-red-700 bg-red-50' :
+                          'border-yellow-500 text-yellow-700 bg-yellow-50'
+                        }
+                      >
+                        {indicator.signal}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-gray-600">{indicator.value}</p>
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
 
-              {/* Support and Resistance */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-green-50 p-3 rounded-lg">
-                  <h5 className="font-semibold text-green-800">Support Level</h5>
-                  <p className="text-green-700 text-lg font-bold">Rs. {analysis.supportLevel}</p>
+          {/* Support/Resistance and Key Levels */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Target className="w-5 h-5" />
+                  <span>Key Price Levels</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                      <h5 className="font-semibold text-green-800 mb-2">Support Level</h5>
+                      <p className="text-green-700 text-2xl font-bold">Rs. {analysis.supportLevel}</p>
+                      <p className="text-xs text-green-600 mt-1">Strong buying interest expected</p>
+                    </div>
+                    <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                      <h5 className="font-semibold text-red-800 mb-2">Resistance Level</h5>
+                      <p className="text-red-700 text-2xl font-bold">Rs. {analysis.resistanceLevel}</p>
+                      <p className="text-xs text-red-600 mt-1">Potential selling pressure</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-red-50 p-3 rounded-lg">
-                  <h5 className="font-semibold text-red-800">Resistance Level</h5>
-                  <p className="text-red-700 text-lg font-bold">Rs. {analysis.resistanceLevel}</p>
-                </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              {/* Confidence Score */}
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="font-semibold">Confidence Score</span>
-                  <span className="font-bold">{analysis.confidence}%</span>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Lightbulb className="w-5 h-5" />
+                  <span>Trading Recommendations</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {analysis.recommendations?.map((rec: string, index: number) => (
+                    <div key={index} className="flex items-start space-x-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <span className="text-sm">{rec}</span>
+                    </div>
+                  ))}
                 </div>
-                <Progress value={analysis.confidence} className="w-full" />
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">Upload and analyze a chart to see predictions</p>
-            </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Risk Analysis */}
+          {analysis.riskFactors && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Shield className="w-5 h-5" />
+                  <span>Risk Assessment</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                  <h5 className="font-semibold text-yellow-800 mb-3">Key Risk Factors to Monitor:</h5>
+                  <div className="space-y-2">
+                    {analysis.riskFactors.map((risk: string, index: number) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-yellow-700">{risk}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      )}
+
+      {!analysis && !isAnalyzing && (
+        <Card className="text-center py-12">
+          <CardContent>
+            <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Professional Chart Analysis</h3>
+            <p className="text-gray-500 mb-4">
+              Upload a chart to get comprehensive technical analysis with AI-powered insights
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-400 max-w-md mx-auto">
+              <div>✓ Pattern Recognition</div>
+              <div>✓ Technical Indicators</div>
+              <div>✓ Support/Resistance</div>
+              <div>✓ Trading Signals</div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
