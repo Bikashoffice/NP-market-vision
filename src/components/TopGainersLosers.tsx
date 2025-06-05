@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, RefreshCw, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, RefreshCw, BarChart3, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MarketDataService } from "@/services/MarketDataService";
 
@@ -24,7 +24,7 @@ export const TopGainersLosers = () => {
       setLastUpdated(new Date());
       toast({
         title: "Data Updated",
-        description: "Market data has been refreshed successfully",
+        description: "Live market data has been refreshed successfully",
       });
     } catch (error) {
       toast({
@@ -51,7 +51,7 @@ export const TopGainersLosers = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Market Movers</h2>
+          <h2 className="text-2xl font-bold">Live Market Data</h2>
           <p className="text-gray-600">
             {lastUpdated && `Last updated: ${lastUpdated.toLocaleTimeString()}`}
           </p>
@@ -66,6 +66,53 @@ export const TopGainersLosers = () => {
           <span>Refresh</span>
         </Button>
       </div>
+
+      {/* Market Summary */}
+      {marketData && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="w-5 h-5" />
+              <span>NEPSE Market Summary</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg text-center">
+                <p className="text-sm text-gray-600">NEPSE Index</p>
+                <p className="text-2xl font-bold text-blue-800">{marketData.nepseIndex}</p>
+                <p className={`text-sm font-semibold ${marketData.nepseChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatChange(marketData.nepseChange)}
+                </p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg text-center">
+                <p className="text-sm text-gray-600">Total Turnover</p>
+                <p className="text-xl font-bold text-green-800">Rs. {marketData.totalTurnover}</p>
+                <p className="text-sm text-gray-500">Today</p>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg text-center">
+                <p className="text-sm text-gray-600">Shares Traded</p>
+                <p className="text-xl font-bold text-purple-800">{marketData.sharesTraded}</p>
+                <p className="text-sm text-gray-500">Volume</p>
+              </div>
+              <div className="bg-orange-50 p-4 rounded-lg text-center">
+                <p className="text-sm text-gray-600">Companies Traded</p>
+                <p className="text-xl font-bold text-orange-800">{marketData.companiesTraded}</p>
+                <p className="text-sm text-gray-500">Active</p>
+              </div>
+              <div className="bg-indigo-50 p-4 rounded-lg text-center">
+                <p className="text-sm text-gray-600">Market Breadth</p>
+                <div className="flex justify-between text-xs mt-1">
+                  <span className="text-green-600">↗ {marketData.advances}</span>
+                  <span className="text-red-600">↘ {marketData.declines}</span>
+                  <span className="text-gray-600">→ {marketData.neutral}</span>
+                </div>
+                <p className="text-sm text-gray-500">Adv/Dec/Unch</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {marketData && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -87,7 +134,7 @@ export const TopGainersLosers = () => {
                       </div>
                       <div>
                         <p className="font-semibold">{stock.symbol}</p>
-                        <p className="text-sm text-gray-600">{stock.name}</p>
+                        <p className="text-sm text-gray-600 truncate max-w-48">{stock.name}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -121,7 +168,7 @@ export const TopGainersLosers = () => {
                       </div>
                       <div>
                         <p className="font-semibold">{stock.symbol}</p>
-                        <p className="text-sm text-gray-600">{stock.name}</p>
+                        <p className="text-sm text-gray-600 truncate max-w-48">{stock.name}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -139,49 +186,11 @@ export const TopGainersLosers = () => {
         </div>
       )}
 
-      {/* Market Summary */}
-      {marketData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <BarChart3 className="w-5 h-5" />
-              <span>Market Summary</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg text-center">
-                <p className="text-sm text-gray-600">NEPSE Index</p>
-                <p className="text-2xl font-bold text-blue-800">{marketData.nepseIndex}</p>
-                <p className={`text-sm font-semibold ${marketData.nepseChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatChange(marketData.nepseChange)}
-                </p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg text-center">
-                <p className="text-sm text-gray-600">Total Turnover</p>
-                <p className="text-xl font-bold text-green-800">Rs. {marketData.totalTurnover}</p>
-                <p className="text-sm text-gray-500">Today</p>
-              </div>
-              <div className="bg-purple-50 p-4 rounded-lg text-center">
-                <p className="text-sm text-gray-600">Shares Traded</p>
-                <p className="text-xl font-bold text-purple-800">{marketData.sharesTraded}</p>
-                <p className="text-sm text-gray-500">Volume</p>
-              </div>
-              <div className="bg-orange-50 p-4 rounded-lg text-center">
-                <p className="text-sm text-gray-600">Companies Traded</p>
-                <p className="text-xl font-bold text-orange-800">{marketData.companiesTraded}</p>
-                <p className="text-sm text-gray-500">Active</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {!marketData && !isLoading && (
         <Card className="text-center py-12">
           <CardContent>
-            <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Click refresh to load market data</p>
+            <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">Click refresh to load live market data</p>
           </CardContent>
         </Card>
       )}
