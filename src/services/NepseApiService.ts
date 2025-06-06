@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 // NEPSE API endpoints based on documentation
@@ -33,7 +32,7 @@ export interface MarketSummary {
 
 export class NepseApiService {
   private static instance: NepseApiService;
-  private apiKey = process.env.NEPSE_API_KEY || '';
+  private apiKey = ''; // Remove process.env reference for browser compatibility
 
   public static getInstance(): NepseApiService {
     if (!NepseApiService.instance) {
