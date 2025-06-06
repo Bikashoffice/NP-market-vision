@@ -83,17 +83,20 @@ export const TechnicalAnalysis = ({ symbol = "NABIL" }: TechnicalAnalysisProps) 
     );
   };
 
-  const CustomCandlestick = ({ payload }: any) => {
-    if (!payload) return null;
+  const CustomCandlestick = ({ payload, x, width }: any) => {
+    if (!payload || !payload.payload) return null;
     
-    const { open, high, low, close, x, width } = payload;
+    const data = payload.payload;
+    const { open, high, low, close } = data;
     const isPositive = close >= open;
     const bodyHeight = Math.abs(close - open);
     const bodyY = Math.min(open, close);
+    const candleWidth = width * 0.6;
+    const candleX = x + (width - candleWidth) / 2;
     
     return (
       <g>
-        {/* High-Low line */}
+        {/* High-Low line (wick) */}
         <line
           x1={x + width / 2}
           y1={high}
@@ -104,12 +107,13 @@ export const TechnicalAnalysis = ({ symbol = "NABIL" }: TechnicalAnalysisProps) 
         />
         {/* Body */}
         <rect
-          x={x + width * 0.2}
+          x={candleX}
           y={bodyY}
-          width={width * 0.6}
+          width={candleWidth}
           height={bodyHeight || 1}
           fill={isPositive ? "#22c55e" : "#ef4444"}
           stroke={isPositive ? "#22c55e" : "#ef4444"}
+          strokeWidth={1}
         />
       </g>
     );
@@ -252,79 +256,111 @@ export const TechnicalAnalysis = ({ symbol = "NABIL" }: TechnicalAnalysisProps) 
       <Card className="h-[600px]">
         <CardContent className="p-4 h-full">
           <ChartContainer config={chartConfig} className="h-[550px]">
-            <ComposedChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-              <XAxis 
-                dataKey="date" 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis 
-                yAxisId="price"
-                domain={['dataMin - 10', 'dataMax + 10']}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis 
-                yAxisId="volume"
-                orientation="right"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12 }}
-              />
-              
-              <ChartTooltip
-                content={<ChartTooltipContent />}
-                labelFormatter={(value) => `Date: ${value}`}
-              />
-
-              {/* Volume bars */}
-              {indicators.includes("Volume") && (
-                <Bar
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis 
+                  dataKey="date" 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
+                  yAxisId="price"
+                  domain={['dataMin - 10', 'dataMax + 10']}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
                   yAxisId="volume"
-                  dataKey="volume"
-                  fill="#8884d8"
-                  opacity={0.3}
+                  orientation="right"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
                 />
-              )}
+                
+                <Tooltip
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white p-3 border rounded shadow-lg">
+                          <p className="font-semibold">{`Date: ${label}`}</p>
+                          {chartType === "candlestick" && (
+                            <>
+                              <p className="text-blue-600">{`Open: ${data.open}`}</p>
+                              <p className="text-green-600">{`High: ${data.high}`}</p>
+                              <p className="text-red-600">{`Low: ${data.low}`}</p>
+                              <p className="text-purple-600">{`Close: ${data.close}`}</p>
+                            </>
+                          )}
+                          <p className="text-gray-600">{`Volume: ${data.volume?.toLocaleString()}`}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
 
-              {/* Price line or candlesticks */}
-              {chartType === "line" && (
-                <Line
-                  yAxisId="price"
-                  type="monotone"
-                  dataKey="close"
-                  stroke="#2563eb"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              )}
+                {/* Volume bars */}
+                {indicators.includes("Volume") && (
+                  <Bar
+                    yAxisId="volume"
+                    dataKey="volume"
+                    fill="#8884d8"
+                    opacity={0.3}
+                  />
+                )}
 
-              {/* Moving Averages */}
-              {indicators.includes("SMA") && (
-                <Line
-                  yAxisId="price"
-                  type="monotone"
-                  dataKey="sma"
-                  stroke="#f59e0b"
-                  strokeWidth={1}
-                  dot={false}
-                />
-              )}
+                {/* Candlesticks */}
+                {chartType === "candlestick" && (
+                  chartData.map((entry, index) => (
+                    <CustomCandlestick
+                      key={index}
+                      payload={{ payload: entry }}
+                      x={index * (100 / chartData.length)}
+                      width={100 / chartData.length}
+                    />
+                  ))
+                )}
 
-              {indicators.includes("EMA") && (
-                <Line
-                  yAxisId="price"
-                  type="monotone"
-                  dataKey="ema"
-                  stroke="#10b981"
-                  strokeWidth={1}
-                  dot={false}
-                />
-              )}
-            </ComposedChart>
+                {/* Price line */}
+                {chartType === "line" && (
+                  <Line
+                    yAxisId="price"
+                    type="monotone"
+                    dataKey="close"
+                    stroke="#2563eb"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                )}
+
+                {/* Moving Averages */}
+                {indicators.includes("SMA") && (
+                  <Line
+                    yAxisId="price"
+                    type="monotone"
+                    dataKey="sma"
+                    stroke="#f59e0b"
+                    strokeWidth={1}
+                    dot={false}
+                  />
+                )}
+
+                {indicators.includes("EMA") && (
+                  <Line
+                    yAxisId="price"
+                    type="monotone"
+                    dataKey="ema"
+                    stroke="#10b981"
+                    strokeWidth={1}
+                    dot={false}
+                  />
+                )}
+              </ComposedChart>
+            </ResponsiveContainer>
           </ChartContainer>
         </CardContent>
       </Card>

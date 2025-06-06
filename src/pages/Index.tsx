@@ -10,10 +10,12 @@ import { PredictionDashboard } from "@/components/PredictionDashboard";
 import { TechnicalAnalysis } from "@/components/TechnicalAnalysis";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { TimeDisplay } from "@/components/TimeDisplay";
-import { TrendingUp, TrendingDown, BarChart3, Search, Upload, Database, ChartCandlestick } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart3, Search, Upload, Database, ChartCandlestick, Building2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [language, setLanguage] = useState<'en' | 'ne'>('en');
+  const navigate = useNavigate();
 
   const texts = {
     en: {
@@ -25,7 +27,8 @@ const Index = () => {
       technicalAnalysis: "Technical Analysis",
       research: "Market Research",
       topMovers: "Top Movers",
-      allStocks: "All Stocks"
+      allStocks: "All Stocks",
+      ipoRights: "IPO & Rights"
     },
     ne: {
       title: "नेपाल स्टक प्रिडिक्टर",
@@ -36,7 +39,8 @@ const Index = () => {
       technicalAnalysis: "प्राविधिक विश्लेषण",
       research: "बजार अनुसन्धान",
       topMovers: "शीर्ष चलनेवाला",
-      allStocks: "सबै स्टकहरू"
+      allStocks: "सबै स्टकहरू",
+      ipoRights: "आईपीओ र राइट शेयर"
     }
   };
 
@@ -73,7 +77,7 @@ const Index = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="dashboard" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:grid-cols-7">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <BarChart3 className="w-4 h-4" />
               <span>{t.dashboard}</span>
@@ -98,6 +102,10 @@ const Index = () => {
               <Database className="w-4 h-4" />
               <span>{t.allStocks}</span>
             </TabsTrigger>
+            <TabsTrigger value="ipo-rights" className="flex items-center space-x-2" onClick={() => navigate('/ipo-rights')}>
+              <Building2 className="w-4 h-4" />
+              <span>{t.ipoRights}</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
@@ -117,7 +125,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="top-movers" className="space-y-6">
-            <TopGainersLosers language={language} />
+            <TopGainersLosers language="en" />
           </TabsContent>
 
           <TabsContent value="all-stocks" className="space-y-6">
