@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RefreshCw, Search, TrendingUp, TrendingDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { MarketDataService } from "@/services/MarketDataService";
+import { NepseApiService } from "@/services/NepseApiService";
 
 export const AllStocksTable = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,8 +23,8 @@ export const AllStocksTable = () => {
   useEffect(() => {
     if (searchTerm) {
       const filtered = allStocks.filter(stock => 
-        stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        stock.name.toLowerCase().includes(searchTerm.toLowerCase())
+        stock.symbol?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (stock.symbol + ' Limited')?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredStocks(filtered);
     } else {
@@ -35,15 +35,18 @@ export const AllStocksTable = () => {
   const fetchMarketData = async () => {
     setIsLoading(true);
     try {
-      const data = await MarketDataService.getTopMovers();
-      setAllStocks(data.allStocks || []);
-      setFilteredStocks(data.allStocks || []);
+      const nepseApi = NepseApiService.getInstance();
+      const stocks = await nepseApi.getAllStocks();
+      console.log('Fetched stocks data:', stocks);
+      setAllStocks(stocks || []);
+      setFilteredStocks(stocks || []);
       setLastUpdated(new Date());
       toast({
         title: "Data Updated",
         description: "All market data has been refreshed successfully",
       });
     } catch (error) {
+      console.error('Error fetching market data:', error);
       toast({
         title: "Update Failed",
         description: "Failed to fetch market data. Please try again.",
@@ -54,22 +57,34 @@ export const AllStocksTable = () => {
     }
   };
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | undefined | null) => {
+    if (price === undefined || price === null || isNaN(price)) {
+      return 'N/A';
+    }
     return `Rs. ${price.toLocaleString()}`;
   };
 
-  const formatChange = (change: number) => {
+  const formatChange = (change: number | undefined | null) => {
+    if (change === undefined || change === null || isNaN(change)) {
+      return 'N/A';
+    }
     const sign = change >= 0 ? '+' : '';
     return `${sign}${change.toFixed(2)}%`;
   };
 
-  const getChangeColor = (change: number) => {
+  const getChangeColor = (change: number | undefined | null) => {
+    if (change === undefined || change === null || isNaN(change)) {
+      return 'text-gray-600';
+    }
     if (change > 0) return 'text-green-600';
     if (change < 0) return 'text-red-600';
     return 'text-gray-600';
   };
 
-  const getChangeIcon = (change: number) => {
+  const getChangeIcon = (change: number | undefined | null) => {
+    if (change === undefined || change === null || isNaN(change)) {
+      return null;
+    }
     if (change > 0) return <TrendingUp className="w-4 h-4 text-green-600" />;
     if (change < 0) return <TrendingDown className="w-4 h-4 text-red-600" />;
     return null;
@@ -139,24 +154,24 @@ export const AllStocksTable = () => {
               </TableHeader>
               <TableBody>
                 {filteredStocks.map((stock, index) => (
-                  <TableRow key={index} className="hover:bg-gray-50">
-                    <TableCell className="font-semibold">{stock.symbol}</TableCell>
-                    <TableCell className="max-w-xs truncate" title={stock.name}>
-                      {stock.name}
+                  <TableRow key={stock.symbol || index} className="hover:bg-gray-50">
+                    <TableCell className="font-semibold">{stock.symbol || 'N/A'}</TableCell>
+                    <TableCell className="max-w-xs truncate" title={`${stock.symbol} Limited`}>
+                      {stock.symbol} Limited
                     </TableCell>
                     <TableCell className="text-right font-bold">
-                      {formatPrice(stock.price)}
+                      {formatPrice(stock.ltp)}
                     </TableCell>
-                    <TableCell className={`text-right font-semibold ${getChangeColor(stock.change)}`}>
+                    <TableCell className={`text-right font-semibold ${getChangeColor(stock.percentageChange)}`}>
                       <div className="flex items-center justify-end space-x-1">
-                        {getChangeIcon(stock.change)}
-                        <span>{formatChange(stock.change)}</span>
+                        {getChangeIcon(stock.percentageChange)}
+                        <span>{formatChange(stock.percentageChange)}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">{formatPrice(stock.open)}</TableCell>
                     <TableCell className="text-right">{formatPrice(stock.high)}</TableCell>
                     <TableCell className="text-right">{formatPrice(stock.low)}</TableCell>
-                    <TableCell className="text-right">{stock.volume.toLocaleString()}</TableCell>
+                    <TableCell className="text-right">{stock.volume?.toLocaleString() || 'N/A'}</TableCell>
                     <TableCell className="text-right">{formatPrice(stock.previousClose)}</TableCell>
                   </TableRow>
                 ))}
