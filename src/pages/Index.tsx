@@ -7,9 +7,38 @@ import { MarketResearch } from "@/components/MarketResearch";
 import { TopGainersLosers } from "@/components/TopGainersLosers";
 import { AllStocksTable } from "@/components/AllStocksTable";
 import { PredictionDashboard } from "@/components/PredictionDashboard";
+import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { TimeDisplay } from "@/components/TimeDisplay";
 import { TrendingUp, TrendingDown, BarChart3, Search, Upload, Database } from "lucide-react";
 
 const Index = () => {
+  const [language, setLanguage] = useState<'en' | 'ne'>('en');
+
+  const texts = {
+    en: {
+      title: "Nepal Stock Predictor",
+      subtitle: "AI-Powered Market Analysis & Predictions",
+      liveData: "Live Market Data",
+      dashboard: "Dashboard",
+      chartAnalysis: "Chart Analysis",
+      research: "Market Research",
+      topMovers: "Top Movers",
+      allStocks: "All Stocks"
+    },
+    ne: {
+      title: "नेपाल स्टक प्रिडिक्टर",
+      subtitle: "एआई-संचालित बजार विश्लेषण र भविष्यवाणी",
+      liveData: "लाइभ बजार डाटा",
+      dashboard: "ड्यासबोर्ड",
+      chartAnalysis: "चार्ट विश्लेषण",
+      research: "बजार अनुसन्धान",
+      topMovers: "शीर्ष चलनेवाला",
+      allStocks: "सबै स्टकहरू"
+    }
+  };
+
+  const t = texts[language];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
@@ -22,14 +51,18 @@ const Index = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Nepal Stock Predictor
+                  {t.title}
                 </h1>
-                <p className="text-sm text-gray-600">AI-Powered Market Analysis & Predictions</p>
+                <p className="text-sm text-gray-600">{t.subtitle}</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <span>Live Market Data</span>
+            <div className="flex items-center space-x-4">
+              <TimeDisplay />
+              <LanguageSwitch currentLanguage={language} onLanguageChange={setLanguage} />
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span>{t.liveData}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -40,23 +73,23 @@ const Index = () => {
           <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <BarChart3 className="w-4 h-4" />
-              <span>Dashboard</span>
+              <span>{t.dashboard}</span>
             </TabsTrigger>
             <TabsTrigger value="chart-analysis" className="flex items-center space-x-2">
               <Upload className="w-4 h-4" />
-              <span>Chart Analysis</span>
+              <span>{t.chartAnalysis}</span>
             </TabsTrigger>
             <TabsTrigger value="research" className="flex items-center space-x-2">
               <Search className="w-4 h-4" />
-              <span>Market Research</span>
+              <span>{t.research}</span>
             </TabsTrigger>
             <TabsTrigger value="top-movers" className="flex items-center space-x-2">
               <TrendingUp className="w-4 h-4" />
-              <span>Top Movers</span>
+              <span>{t.topMovers}</span>
             </TabsTrigger>
             <TabsTrigger value="all-stocks" className="flex items-center space-x-2">
               <Database className="w-4 h-4" />
-              <span>All Stocks</span>
+              <span>{t.allStocks}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -69,11 +102,11 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="research" className="space-y-6">
-            <MarketResearch />
+            <MarketResearch language={language} />
           </TabsContent>
 
           <TabsContent value="top-movers" className="space-y-6">
-            <TopGainersLosers />
+            <TopGainersLosers language={language} />
           </TabsContent>
 
           <TabsContent value="all-stocks" className="space-y-6">

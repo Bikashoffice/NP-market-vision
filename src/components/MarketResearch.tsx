@@ -8,19 +8,125 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Globe, TrendingUp, TrendingDown, Calendar, ExternalLink, BarChart3, Target, AlertTriangle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ResearchService } from "@/services/ResearchService";
+import { ExpandedStockDataService } from "@/services/ExpandedStockData";
 
-export const MarketResearch = () => {
+interface MarketResearchProps {
+  language: 'en' | 'ne';
+}
+
+export const MarketResearch = ({ language = 'en' }: MarketResearchProps) => {
   const [query, setQuery] = useState('');
   const [isResearching, setIsResearching] = useState(false);
   const [progress, setProgress] = useState(0);
   const [researchResults, setResearchResults] = useState<any>(null);
+  const [upcomingIPOs] = useState(ExpandedStockDataService.getUpcomingIPOs());
+  const [rightShares] = useState(ExpandedStockDataService.getRightShares());
   const { toast } = useToast();
+
+  const texts = {
+    en: {
+      title: "Advanced Market Research",
+      searchPlaceholder: "Enter stock symbol, company name, or sector (e.g., NABIL, banking, hydropower)",
+      research: "Research",
+      analyzing: "Analyzing...",
+      gatheringData: "Gathering comprehensive market data and analysis...",
+      researchComplete: "Research Complete",
+      researchSuccess: "Comprehensive market research has been completed successfully",
+      researchFailed: "Research Failed",
+      researchError: "Failed to conduct market research. Please try again.",
+      enterQuery: "Enter Search Query",
+      enterQueryDesc: "Please enter a stock symbol or company name to research",
+      companyOverview: "Company Overview",
+      pricePerformance: "Price Performance",
+      currentPrice: "Current Price",
+      weeklyChange: "Weekly Change",
+      monthlyChange: "Monthly Change",
+      yearlyChange: "Yearly Change",
+      technicalLevels: "Technical Levels",
+      support: "Support:",
+      resistance: "Resistance:",
+      marketSentiment: "Market Sentiment & Analysis",
+      overallSentiment: "Overall Sentiment",
+      sentimentScore: "Sentiment Score",
+      keyFactors: "Key Factors:",
+      swotAnalysis: "SWOT Analysis",
+      strengths: "Strengths",
+      weaknesses: "Weaknesses",
+      opportunities: "Opportunities",
+      threats: "Threats",
+      recentNews: "Recent News & Market Updates",
+      source: "Source:",
+      upcomingIPOs: "Upcoming IPOs",
+      rightShares: "Right Shares",
+      company: "Company",
+      issueManager: "Issue Manager",
+      openDate: "Open Date",
+      closeDate: "Close Date",
+      units: "Units",
+      price: "Price",
+      status: "Status",
+      ratio: "Ratio",
+      bookCloseDate: "Book Close Date",
+      searchTitle: "Advanced Market Research",
+      searchDesc: "Get comprehensive analysis including fundamentals, technicals, SWOT analysis, and recent news",
+      searchSuggestion: "Try: NABIL, NICA, HIDCL, banking, hydropower, insurance"
+    },
+    ne: {
+      title: "उन्नत बजार अनुसन्धान",
+      searchPlaceholder: "स्टक सिम्बल, कम्पनीको नाम, वा क्षेत्र प्रविष्ट गर्नुहोस् (जस्तै, NABIL, banking, hydropower)",
+      research: "अनुसन्धान",
+      analyzing: "विश्लेषण गर्दै...",
+      gatheringData: "व्यापक बजार डेटा र विश्लेषण सङ्कलन गर्दै...",
+      researchComplete: "अनुसन्धान पूरा",
+      researchSuccess: "व्यापक बजार अनुसन्धान सफलतापूर्वक पूरा भएको छ",
+      researchFailed: "अनुसन्धान असफल",
+      researchError: "बजार अनुसन्धान गर्न असफल। कृपया फेरि प्रयास गर्नुहोस्।",
+      enterQuery: "खोज प्रश्न प्रविष्ट गर्नुहोस्",
+      enterQueryDesc: "कृपया अनुसन्धानको लागि स्टक सिम्बल वा कम्पनीको नाम प्रविष्ट गर्नुहोस्",
+      companyOverview: "कम्पनी सिंहावलोकन",
+      pricePerformance: "मूल्य प्रदर्शन",
+      currentPrice: "वर्तमान मूल्य",
+      weeklyChange: "साप्ताहिक परिवर्तन",
+      monthlyChange: "मासिक परिवर्तन",
+      yearlyChange: "वार्षिक परिवर्तन",
+      technicalLevels: "प्राविधिक स्तरहरू",
+      support: "समर्थन:",
+      resistance: "प्रतिरोध:",
+      marketSentiment: "बजार भावना र विश्लेषण",
+      overallSentiment: "समग्र भावना",
+      sentimentScore: "भावना स्कोर",
+      keyFactors: "मुख्य कारकहरू:",
+      swotAnalysis: "SWOT विश्लेषण",
+      strengths: "शक्तिहरू",
+      weaknesses: "कमजोरीहरू",
+      opportunities: "अवसरहरू",
+      threats: "खतराहरू",
+      recentNews: "हालका समाचार र बजार अपडेटहरू",
+      source: "स्रोत:",
+      upcomingIPOs: "आगामी आईपीओहरू",
+      rightShares: "अधिकार शेयरहरू",
+      company: "कम्पनी",
+      issueManager: "इश्यू प्रबन्धक",
+      openDate: "खुला मिति",
+      closeDate: "बन्द मिति",
+      units: "एकाइहरू",
+      price: "मूल्य",
+      status: "स्थिति",
+      ratio: "अनुपात",
+      bookCloseDate: "पुस्तक बन्द मिति",
+      searchTitle: "उन्नत बजार अनुसन्धान",
+      searchDesc: "आधारभूत, प्राविधिक, SWOT विश्लेषण, र हालका समाचारहरू सहित व्यापक विश्लेषण प्राप्त गर्नुहोस्",
+      searchSuggestion: "प्रयास गर्नुहोस्: NABIL, NICA, HIDCL, banking, hydropower, insurance"
+    }
+  };
+
+  const t = texts[language];
 
   const handleResearch = async () => {
     if (!query.trim()) {
       toast({
-        title: "Enter Search Query",
-        description: "Please enter a stock symbol or company name to research",
+        title: t.enterQuery,
+        description: t.enterQueryDesc,
         variant: "destructive",
       });
       return;
@@ -48,13 +154,13 @@ export const MarketResearch = () => {
       setResearchResults(results);
 
       toast({
-        title: "Research Complete",
-        description: "Comprehensive market research has been completed successfully",
+        title: t.researchComplete,
+        description: t.researchSuccess,
       });
     } catch (error) {
       toast({
-        title: "Research Failed",
-        description: "Failed to conduct market research. Please try again.",
+        title: t.researchFailed,
+        description: t.researchError,
         variant: "destructive",
       });
     } finally {
@@ -82,13 +188,13 @@ export const MarketResearch = () => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Search className="w-5 h-5" />
-            <span>Advanced Market Research</span>
+            <span>{t.title}</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex space-x-2">
             <Input
-              placeholder="Enter stock symbol, company name, or sector (e.g., NABIL, banking, hydropower)"
+              placeholder={t.searchPlaceholder}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleResearch()}
@@ -99,14 +205,14 @@ export const MarketResearch = () => {
               disabled={isResearching}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
-              {isResearching ? "Analyzing..." : "Research"}
+              {isResearching ? t.analyzing : t.research}
             </Button>
           </div>
 
           {isResearching && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm text-gray-600">
-                <span>Gathering comprehensive market data and analysis...</span>
+                <span>{t.gatheringData}</span>
                 <span>{progress}%</span>
               </div>
               <Progress value={progress} className="w-full" />
@@ -114,6 +220,76 @@ export const MarketResearch = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* IPOs and Right Shares */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Upcoming IPOs */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="w-5 h-5" />
+              <span>{t.upcomingIPOs}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {upcomingIPOs.map((ipo, index) => (
+                <div key={index} className="border rounded-lg p-3 space-y-2">
+                  <div className="flex justify-between items-start">
+                    <h4 className="font-semibold text-sm">{ipo.company}</h4>
+                    <Badge className={
+                      ipo.status === 'open' ? 'bg-green-100 text-green-800' :
+                      ipo.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }>
+                      {ipo.status}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div><span className="text-gray-600">{t.issueManager}:</span> {ipo.issueManager}</div>
+                    <div><span className="text-gray-600">{t.price}:</span> Rs. {ipo.price}</div>
+                    <div><span className="text-gray-600">{t.openDate}:</span> {ipo.openDate}</div>
+                    <div><span className="text-gray-600">{t.units}:</span> {ipo.units}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Right Shares */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Target className="w-5 h-5" />
+              <span>{t.rightShares}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {rightShares.map((rights, index) => (
+                <div key={index} className="border rounded-lg p-3 space-y-2">
+                  <div className="flex justify-between items-start">
+                    <h4 className="font-semibold text-sm">{rights.company}</h4>
+                    <Badge className={
+                      rights.status === 'open' ? 'bg-green-100 text-green-800' :
+                      rights.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }>
+                      {rights.status}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div><span className="text-gray-600">{t.ratio}:</span> {rights.ratio}</div>
+                    <div><span className="text-gray-600">{t.price}:</span> Rs. {rights.price}</div>
+                    <div><span className="text-gray-600">{t.bookCloseDate}:</span> {rights.bookCloseDate}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Research Results */}
       {researchResults && (
@@ -124,7 +300,7 @@ export const MarketResearch = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Globe className="w-5 h-5" />
-                  <span>Company Overview</span>
+                  <span>{t.companyOverview}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -164,18 +340,18 @@ export const MarketResearch = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <BarChart3 className="w-5 h-5" />
-                  <span>Price Performance</span>
+                  <span>{t.pricePerformance}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold">Rs. {researchResults.currentPrice?.toFixed(2)}</div>
-                  <div className="text-sm text-gray-600">Current Price</div>
+                  <div className="text-sm text-gray-600">{t.currentPrice}</div>
                 </div>
                 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Weekly Change</span>
+                    <span className="text-sm">{t.weeklyChange}</span>
                     <div className={`flex items-center space-x-1 ${getChangeColor(researchResults.weeklyChange)}`}>
                       {getChangeIcon(researchResults.weeklyChange)}
                       <span className="font-semibold">{researchResults.weeklyChange?.toFixed(2)}%</span>
@@ -183,7 +359,7 @@ export const MarketResearch = () => {
                   </div>
                   
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Monthly Change</span>
+                    <span className="text-sm">{t.monthlyChange}</span>
                     <div className={`flex items-center space-x-1 ${getChangeColor(researchResults.monthlyChange)}`}>
                       {getChangeIcon(researchResults.monthlyChange)}
                       <span className="font-semibold">{researchResults.monthlyChange?.toFixed(2)}%</span>
@@ -191,7 +367,7 @@ export const MarketResearch = () => {
                   </div>
                   
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Yearly Change</span>
+                    <span className="text-sm">{t.yearlyChange}</span>
                     <div className={`flex items-center space-x-1 ${getChangeColor(researchResults.yearlyChange)}`}>
                       {getChangeIcon(researchResults.yearlyChange)}
                       <span className="font-semibold">{researchResults.yearlyChange?.toFixed(2)}%</span>
@@ -202,10 +378,10 @@ export const MarketResearch = () => {
                 {/* Technical Levels */}
                 {researchResults.technicalLevels && (
                   <div className="space-y-2">
-                    <h5 className="font-semibold text-sm">Technical Levels</h5>
+                    <h5 className="font-semibold text-sm">{t.technicalLevels}</h5>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div>
-                        <span className="text-gray-600">Support:</span>
+                        <span className="text-gray-600">{t.support}</span>
                         <div className="space-y-1">
                           {researchResults.technicalLevels.support?.map((level: number, idx: number) => (
                             <div key={idx} className="text-red-600">Rs. {level}</div>
@@ -213,7 +389,7 @@ export const MarketResearch = () => {
                         </div>
                       </div>
                       <div>
-                        <span className="text-gray-600">Resistance:</span>
+                        <span className="text-gray-600">{t.resistance}</span>
                         <div className="space-y-1">
                           {researchResults.technicalLevels.resistance?.map((level: number, idx: number) => (
                             <div key={idx} className="text-green-600">Rs. {level}</div>
@@ -233,12 +409,12 @@ export const MarketResearch = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <TrendingUp className="w-5 h-5" />
-                  <span>Market Sentiment & Analysis</span>
+                  <span>{t.marketSentiment}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span>Overall Sentiment</span>
+                  <span>{t.overallSentiment}</span>
                   <Badge className={
                     researchResults.sentiment === 'Positive' ? 'bg-green-100 text-green-800' :
                     researchResults.sentiment === 'Negative' ? 'bg-red-100 text-red-800' :
@@ -250,7 +426,7 @@ export const MarketResearch = () => {
                 
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm font-semibold">Sentiment Score</span>
+                    <span className="text-sm font-semibold">{t.sentimentScore}</span>
                     <span className="font-bold">{researchResults.sentimentScore}/100</span>
                   </div>
                   <Progress value={researchResults.sentimentScore} className="w-full" />
@@ -258,7 +434,7 @@ export const MarketResearch = () => {
 
                 {/* Key Factors */}
                 <div className="space-y-2">
-                  <h5 className="font-semibold">Key Factors:</h5>
+                  <h5 className="font-semibold">{t.keyFactors}</h5>
                   <div className="space-y-2 max-h-48 overflow-y-auto">
                     {researchResults.keyFactors?.map((factor: string, index: number) => (
                       <div key={index} className="flex items-start space-x-2">
@@ -277,13 +453,13 @@ export const MarketResearch = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Target className="w-5 h-5" />
-                    <span>SWOT Analysis</span>
+                    <span>{t.swotAnalysis}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <h6 className="font-semibold text-green-700 text-sm">Strengths</h6>
+                      <h6 className="font-semibold text-green-700 text-sm">{t.strengths}</h6>
                       <ul className="text-xs space-y-1">
                         {researchResults.fundamentalAnalysis.strengths?.map((item: string, idx: number) => (
                           <li key={idx} className="flex items-start space-x-1">
@@ -295,7 +471,7 @@ export const MarketResearch = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <h6 className="font-semibold text-red-700 text-sm">Weaknesses</h6>
+                      <h6 className="font-semibold text-red-700 text-sm">{t.weaknesses}</h6>
                       <ul className="text-xs space-y-1">
                         {researchResults.fundamentalAnalysis.weaknesses?.map((item: string, idx: number) => (
                           <li key={idx} className="flex items-start space-x-1">
@@ -307,7 +483,7 @@ export const MarketResearch = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <h6 className="font-semibold text-blue-700 text-sm">Opportunities</h6>
+                      <h6 className="font-semibold text-blue-700 text-sm">{t.opportunities}</h6>
                       <ul className="text-xs space-y-1">
                         {researchResults.fundamentalAnalysis.opportunities?.map((item: string, idx: number) => (
                           <li key={idx} className="flex items-start space-x-1">
@@ -319,7 +495,7 @@ export const MarketResearch = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <h6 className="font-semibold text-orange-700 text-sm">Threats</h6>
+                      <h6 className="font-semibold text-orange-700 text-sm">{t.threats}</h6>
                       <ul className="text-xs space-y-1">
                         {researchResults.fundamentalAnalysis.threats?.map((item: string, idx: number) => (
                           <li key={idx} className="flex items-start space-x-1">
@@ -340,7 +516,7 @@ export const MarketResearch = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="w-5 h-5" />
-                <span>Recent News & Market Updates</span>
+                <span>{t.recentNews}</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -365,7 +541,7 @@ export const MarketResearch = () => {
                     </div>
                     <p className="text-sm text-gray-700 mb-2">{news.summary}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Source: {news.source}</span>
+                      <span className="text-xs text-gray-500">{t.source} {news.source}</span>
                       <ExternalLink className="w-4 h-4 text-gray-400" />
                     </div>
                   </div>
@@ -380,12 +556,12 @@ export const MarketResearch = () => {
         <Card className="text-center py-12">
           <CardContent>
             <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Advanced Market Research</h3>
+            <h3 className="text-lg font-semibold mb-2">{t.searchTitle}</h3>
             <p className="text-gray-500 mb-4">
-              Get comprehensive analysis including fundamentals, technicals, SWOT analysis, and recent news
+              {t.searchDesc}
             </p>
             <div className="flex flex-wrap justify-center gap-2 text-sm text-gray-400">
-              <span>Try: NABIL, NICA, HIDCL, banking, hydropower, insurance</span>
+              <span>{t.searchSuggestion}</span>
             </div>
           </CardContent>
         </Card>

@@ -7,11 +7,70 @@ import { TrendingUp, TrendingDown, RefreshCw, BarChart3, Activity, Clock, Calend
 import { useToast } from "@/hooks/use-toast";
 import { MarketDataService } from "@/services/MarketDataService";
 
-export const TopGainersLosers = () => {
+interface TopGainersLosersProps {
+  language: 'en' | 'ne';
+}
+
+export const TopGainersLosers = ({ language = 'en' }: TopGainersLosersProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [marketData, setMarketData] = useState<any>(null);
   const { toast } = useToast();
+
+  const texts = {
+    en: {
+      title: "NEPSE Live Market Data",
+      lastUpdated: "Last Updated",
+      refresh: "Refresh",
+      marketStatus: "Market Status",
+      currentTime: "Current Time",
+      marketCondition: "Market Condition",
+      tradingHours: "Trading Hours",
+      openTime: "Open Time",
+      closeTime: "Close Time",
+      tradingDays: "Trading Days",
+      marketSummary: "NEPSE Market Summary",
+      nepseIndex: "NEPSE Index",
+      totalTurnover: "Total Turnover",
+      sharesTraded: "Shares Traded",
+      today: "Today",
+      volume: "Volume",
+      companiesCount: "Companies Count",
+      active: "Active",
+      marketBreadth: "Market Breadth",
+      gainersLosers: "Up/Down/Unchanged",
+      topGainers: "Top 5 Gainers",
+      topLosers: "Top 5 Losers",
+      loadMessage: "Click refresh to load live market data"
+    },
+    ne: {
+      title: "नेप्से लाइभ बजार डाटा",
+      lastUpdated: "अन्तिम अपडेट",
+      refresh: "रिफ्रेस",
+      marketStatus: "बजारको स्थिति",
+      currentTime: "वर्तमान समय",
+      marketCondition: "बजारको अवस्था",
+      tradingHours: "कारोबार समय",
+      openTime: "खुल्ने समय",
+      closeTime: "बन्द हुने समय",
+      tradingDays: "कारोबार दिन",
+      marketSummary: "नेप्से बजार सारांश",
+      nepseIndex: "नेप्से सूचकांक",
+      totalTurnover: "कुल कारोबार",
+      sharesTraded: "कारोबार शेयर",
+      today: "आज",
+      volume: "मात्रा",
+      companiesCount: "कम्पनी संख्या",
+      active: "सक्रिय",
+      marketBreadth: "बजार चौडाई",
+      gainersLosers: "बढ्यो/घट्यो/समान",
+      topGainers: "शीर्ष बढेका ५",
+      topLosers: "शीर्ष घटेका ५",
+      loadMessage: "रिफ्रेस दबाएर लाइभ बजार डाटा लोड गर्नुहोस्"
+    }
+  };
+
+  const t = texts[language];
 
   useEffect(() => {
     fetchMarketData();
@@ -35,14 +94,14 @@ export const TopGainersLosers = () => {
       
       if (data.marketStatus?.isOpen) {
         toast({
-          title: "लाइभ डाटा अपडेट भयो", // Live Data Updated
-          description: "बजारको तत्काल डाटा सफलतापूर्वक अपडेट गरिएको छ", // Market data updated successfully
+          title: language === 'ne' ? "लाइभ डाटा अपडेट भयो" : "Live Data Updated",
+          description: language === 'ne' ? "बजारको तत्काल डाटा सफलतापूर्वक अपडेट गरिएको छ" : "Market data updated successfully",
         });
       }
     } catch (error) {
       toast({
-        title: "डाटा अपडेट असफल", // Data Update Failed
-        description: "बजारको डाटा प्राप्त गर्न असफल भयो। कृपया फेरि प्रयास गर्नुहोस्।", // Failed to get market data. Please try again.
+        title: language === 'ne' ? "डाटा अपडेट असफल" : "Data Update Failed",
+        description: language === 'ne' ? "बजारको डाटा प्राप्त गर्न असफल भयो। कृपया फेरि प्रयास गर्नुहोस्।" : "Failed to get market data. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -64,9 +123,9 @@ export const TopGainersLosers = () => {
       {/* Header with Market Status */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">नेप्से लाइभ बजार डाटा</h2>
+          <h2 className="text-2xl font-bold">{t.title}</h2>
           <p className="text-gray-600">
-            {lastUpdated && `अन्तिम अपडेट: ${lastUpdated.toLocaleTimeString('ne-NP')}`}
+            {lastUpdated && `${t.lastUpdated}: ${lastUpdated.toLocaleTimeString(language === 'ne' ? 'ne-NP' : 'en-US')}`}
           </p>
         </div>
         <Button 
@@ -76,7 +135,7 @@ export const TopGainersLosers = () => {
           className="flex items-center space-x-2"
         >
           <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          <span>रिफ्रेस</span>
+          <span>{t.refresh}</span>
         </Button>
       </div>
 
@@ -87,23 +146,23 @@ export const TopGainersLosers = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Clock className="w-5 h-5" />
-                <span>बजारको स्थिति</span>
+                <span>{t.marketStatus}</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span>वर्तमान समय:</span>
+                  <span>{t.currentTime}:</span>
                   <Badge variant="outline">{marketData.currentTime}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>बजारको अवस्था:</span>
+                  <span>{t.marketCondition}:</span>
                   <Badge className={marketData.marketStatus.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                    {marketData.marketStatus.status}
+                    {marketData.marketStatus.isOpen ? (language === 'ne' ? 'खुला' : 'Open') : (language === 'ne' ? 'बन्द' : 'Closed')}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>{marketData.marketStatus.nextAction}:</span>
+                  <span>{marketData.marketStatus.isOpen ? (language === 'ne' ? 'बन्द हुने समय' : 'Closing Time') : (language === 'ne' ? 'खुल्ने समय' : 'Opening Time')}:</span>
                   <span className="font-semibold">{marketData.marketStatus.nextActionTime}</span>
                 </div>
               </div>
@@ -114,25 +173,25 @@ export const TopGainersLosers = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="w-5 h-5" />
-                <span>कारोबार समय</span>
+                <span>{t.tradingHours}</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span>खुल्ने समय:</span>
-                  <span className="font-semibold">{marketData.tradingHours?.openTime}</span>
+                  <span>{t.openTime}:</span>
+                  <span className="font-semibold">{marketData.tradingHours?.openTime || '11:00 AM'}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>बन्द हुने समय:</span>
-                  <span className="font-semibold">{marketData.tradingHours?.closeTime}</span>
+                  <span>{t.closeTime}:</span>
+                  <span className="font-semibold">{marketData.tradingHours?.closeTime || '3:00 PM'}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>कारोबार दिन:</span>
-                  <span className="font-semibold">{marketData.tradingHours?.tradingDays}</span>
+                  <span>{t.tradingDays}:</span>
+                  <span className="font-semibold">{marketData.tradingHours?.tradingDays || 'Sun-Thu'}</span>
                 </div>
                 <div className="text-xs text-gray-500 text-center">
-                  {marketData.tradingHours?.timeZone}
+                  {marketData.tradingHours?.timeZone || 'Nepal Standard Time (NPT)'}
                 </div>
               </div>
             </CardContent>
@@ -146,41 +205,41 @@ export const TopGainersLosers = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <BarChart3 className="w-5 h-5" />
-              <span>नेप्से बजार सारांश</span>
+              <span>{t.marketSummary}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="bg-blue-50 p-4 rounded-lg text-center">
-                <p className="text-sm text-gray-600">नेप्से सूचकांक</p>
+                <p className="text-sm text-gray-600">{t.nepseIndex}</p>
                 <p className="text-2xl font-bold text-blue-800">{marketData.nepseIndex}</p>
                 <p className={`text-sm font-semibold ${marketData.nepseChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {formatChange(marketData.nepseChange)}
                 </p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg text-center">
-                <p className="text-sm text-gray-600">कुल कारोबार</p>
+                <p className="text-sm text-gray-600">{t.totalTurnover}</p>
                 <p className="text-xl font-bold text-green-800">Rs. {marketData.totalTurnover}</p>
-                <p className="text-sm text-gray-500">आज</p>
+                <p className="text-sm text-gray-500">{t.today}</p>
               </div>
               <div className="bg-purple-50 p-4 rounded-lg text-center">
-                <p className="text-sm text-gray-600">कारोबार शेयर</p>
+                <p className="text-sm text-gray-600">{t.sharesTraded}</p>
                 <p className="text-xl font-bold text-purple-800">{marketData.sharesTraded}</p>
-                <p className="text-sm text-gray-500">मात्रा</p>
+                <p className="text-sm text-gray-500">{t.volume}</p>
               </div>
               <div className="bg-orange-50 p-4 rounded-lg text-center">
-                <p className="text-sm text-gray-600">कम्पनी संख्या</p>
+                <p className="text-sm text-gray-600">{t.companiesCount}</p>
                 <p className="text-xl font-bold text-orange-800">{marketData.companiesTraded}</p>
-                <p className="text-sm text-gray-500">सक्रिय</p>
+                <p className="text-sm text-gray-500">{t.active}</p>
               </div>
               <div className="bg-indigo-50 p-4 rounded-lg text-center">
-                <p className="text-sm text-gray-600">बजार चौडाई</p>
+                <p className="text-sm text-gray-600">{t.marketBreadth}</p>
                 <div className="flex justify-between text-xs mt-1">
                   <span className="text-green-600">↗ {marketData.advances}</span>
                   <span className="text-red-600">↘ {marketData.declines}</span>
                   <span className="text-gray-600">→ {marketData.unchanged}</span>
                 </div>
-                <p className="text-sm text-gray-500">बढ्यो/घट्यो/समान</p>
+                <p className="text-sm text-gray-500">{t.gainersLosers}</p>
               </div>
             </div>
           </CardContent>
@@ -195,7 +254,7 @@ export const TopGainersLosers = () => {
             <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
               <CardTitle className="flex items-center space-x-2 text-green-800">
                 <TrendingUp className="w-5 h-5" />
-                <span>शीर्ष बढेका ५</span>
+                <span>{t.topGainers}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -229,7 +288,7 @@ export const TopGainersLosers = () => {
             <CardHeader className="bg-gradient-to-r from-red-50 to-rose-50">
               <CardTitle className="flex items-center space-x-2 text-red-800">
                 <TrendingDown className="w-5 h-5" />
-                <span>शीर्ष घटेका ५</span>
+                <span>{t.topLosers}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -264,7 +323,7 @@ export const TopGainersLosers = () => {
         <Card className="text-center py-12">
           <CardContent>
             <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">रिफ्रेस दबाएर लाइभ बजार डाटा लोड गर्नुहोस्</p>
+            <p className="text-gray-500">{t.loadMessage}</p>
           </CardContent>
         </Card>
       )}
