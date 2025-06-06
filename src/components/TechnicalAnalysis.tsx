@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ChartCandlestick, TrendingUp, TrendingDown, Activity, BarChart3, Settings, Play, Pause } from "lucide-react";
 import { ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Bar, Line, ReferenceLine } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { expandedStockData } from "@/services/ExpandedStockData";
+import { ExpandedStockDataService } from "@/services/ExpandedStockData";
 
 interface TechnicalAnalysisProps {
   symbol?: string;
@@ -29,7 +28,7 @@ export const TechnicalAnalysis = ({ symbol = "NABIL" }: TechnicalAnalysisProps) 
     "SMA", "EMA", "RSI", "MACD", "Bollinger Bands", "Volume", "VWAP", "Stochastic"
   ];
 
-  const stocks = expandedStockData;
+  const stocks = ExpandedStockDataService.getExtendedStockList();
 
   useEffect(() => {
     generateChartData();
@@ -213,8 +212,8 @@ export const TechnicalAnalysis = ({ symbol = "NABIL" }: TechnicalAnalysisProps) 
                   <div className="text-sm text-gray-600">LTP</div>
                 </div>
                 <div className="text-center">
-                  <div className={`text-lg font-semibold ${stockInfo.percentageChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {stockInfo.percentageChange >= 0 ? '+' : ''}{stockInfo.percentageChange}%
+                  <div className={`text-lg font-semibold ${stockInfo.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {stockInfo.change >= 0 ? '+' : ''}{stockInfo.change}%
                   </div>
                   <div className="text-sm text-gray-600">Change</div>
                 </div>
