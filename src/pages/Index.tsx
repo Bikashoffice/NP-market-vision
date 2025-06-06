@@ -7,9 +7,10 @@ import { MarketResearch } from "@/components/MarketResearch";
 import { TopGainersLosers } from "@/components/TopGainersLosers";
 import { AllStocksTable } from "@/components/AllStocksTable";
 import { PredictionDashboard } from "@/components/PredictionDashboard";
+import { TechnicalAnalysis } from "@/components/TechnicalAnalysis";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { TimeDisplay } from "@/components/TimeDisplay";
-import { TrendingUp, TrendingDown, BarChart3, Search, Upload, Database } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart3, Search, Upload, Database, ChartCandlestick } from "lucide-react";
 
 const Index = () => {
   const [language, setLanguage] = useState<'en' | 'ne'>('en');
@@ -21,6 +22,7 @@ const Index = () => {
       liveData: "Live Market Data",
       dashboard: "Dashboard",
       chartAnalysis: "Chart Analysis",
+      technicalAnalysis: "Technical Analysis",
       research: "Market Research",
       topMovers: "Top Movers",
       allStocks: "All Stocks"
@@ -31,6 +33,7 @@ const Index = () => {
       liveData: "लाइभ बजार डाटा",
       dashboard: "ड्यासबोर्ड",
       chartAnalysis: "चार्ट विश्लेषण",
+      technicalAnalysis: "प्राविधिक विश्लेषण",
       research: "बजार अनुसन्धान",
       topMovers: "शीर्ष चलनेवाला",
       allStocks: "सबै स्टकहरू"
@@ -70,10 +73,14 @@ const Index = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="dashboard" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <BarChart3 className="w-4 h-4" />
               <span>{t.dashboard}</span>
+            </TabsTrigger>
+            <TabsTrigger value="technical-analysis" className="flex items-center space-x-2">
+              <ChartCandlestick className="w-4 h-4" />
+              <span>{t.technicalAnalysis}</span>
             </TabsTrigger>
             <TabsTrigger value="chart-analysis" className="flex items-center space-x-2">
               <Upload className="w-4 h-4" />
@@ -95,6 +102,10 @@ const Index = () => {
 
           <TabsContent value="dashboard" className="space-y-6">
             <PredictionDashboard />
+          </TabsContent>
+
+          <TabsContent value="technical-analysis" className="space-y-6">
+            <TechnicalAnalysis />
           </TabsContent>
 
           <TabsContent value="chart-analysis" className="space-y-6">
