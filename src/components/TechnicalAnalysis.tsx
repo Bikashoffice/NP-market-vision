@@ -7,9 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ChartCandlestick, TrendingUp, TrendingDown, Activity, BarChart3, Settings, Play, Pause } from "lucide-react";
-import { ComposedChart, CandlestickChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Bar, Line, ReferenceLine } from 'recharts';
+import { ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Bar, Line, ReferenceLine } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { ExpandedStockData } from "@/services/ExpandedStockData";
+import { expandedStockData } from "@/services/ExpandedStockData";
 
 interface TechnicalAnalysisProps {
   symbol?: string;
@@ -29,7 +29,7 @@ export const TechnicalAnalysis = ({ symbol = "NABIL" }: TechnicalAnalysisProps) 
     "SMA", "EMA", "RSI", "MACD", "Bollinger Bands", "Volume", "VWAP", "Stochastic"
   ];
 
-  const stocks = ExpandedStockData.getAllStocks();
+  const stocks = expandedStockData;
 
   useEffect(() => {
     generateChartData();
