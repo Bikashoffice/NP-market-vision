@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, AlertTriangle, BarChart3, Clock, Target } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, BarChart3, Clock, Target, RefreshCw } from "lucide-react";
 import { RealTimeMarketDataService } from "@/services/RealTimeMarketData";
 
 export const PredictionDashboard = () => {
