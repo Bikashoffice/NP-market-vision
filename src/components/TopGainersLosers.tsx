@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, RefreshCw, BarChart3, Activity, Clock, Calendar, ArrowUp, ArrowDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { RealTimeMarketDataService } from "@/services/RealTimeMarketData";
 
 interface TopGainersLosersProps {
   language: 'en' | 'ne';
@@ -13,45 +13,8 @@ interface TopGainersLosersProps {
 export const TopGainersLosers = ({ language = 'en' }: TopGainersLosersProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [marketData, setMarketData] = useState<any>(null);
   const { toast } = useToast();
-
-  // Updated market data from your input
-  const marketData = {
-    nepseIndex: 2845.32,
-    nepseChange: 1.25,
-    totalTurnover: '12,450,886,663.46',
-    sharesTraded: '22,108,809',
-    companiesTraded: 324,
-    advances: 227,
-    declines: 86,
-    unchanged: 11,
-    marketStatus: {
-      isOpen: true,
-      status: 'Market is Open',
-      nextActionTime: '3:00 PM'
-    },
-    currentTime: new Date().toLocaleTimeString(),
-    tradingHours: {
-      openTime: '11:00 AM',
-      closeTime: '3:00 PM',
-      tradingDays: 'Sun-Thu',
-      timeZone: 'Nepal Standard Time (NPT)'
-    },
-    topGainers: [
-      { symbol: 'MKHC', name: 'MKHC Limited', price: 449.68, change: 9.74, volume: 68334 },
-      { symbol: 'RAWA', name: 'RAWA Limited', price: 876.34, change: 9.18, volume: 6981 },
-      { symbol: 'GHL', name: 'GHL Limited', price: 267.69, change: 9.01, volume: 782887 },
-      { symbol: 'MAKAR', name: 'MAKAR Limited', price: 632.2, change: 9.99, volume: 17303 },
-      { symbol: 'BHDC', name: 'BHDC Limited', price: 478.8, change: 9.99, volume: 53298 }
-    ],
-    topLosers: [
-      { symbol: 'BEDC', name: 'BEDC Limited', price: 725.59, change: -7.47, volume: 60310 },
-      { symbol: 'MLBBL', name: 'MLBBL Limited', price: 1465.84, change: -5.23, volume: 1738 },
-      { symbol: 'SAPDBL', name: 'SAPDBL Limited', price: 1082.93, change: -5.11, volume: 117295 },
-      { symbol: 'MLBS', name: 'MLBS Limited', price: 1582.09, change: -3.05, volume: 1331 },
-      { symbol: 'GRDBL', name: 'GRDBL Limited', price: 1274.59, change: -2.44, volume: 27838 }
-    ]
-  };
 
   const texts = {
     en: {
@@ -117,15 +80,52 @@ export const TopGainersLosers = ({ language = 'en' }: TopGainersLosersProps) => 
   const t = texts[language];
 
   useEffect(() => {
-    setLastUpdated(new Date());
+    loadMarketData();
   }, []);
+
+  const loadMarketData = () => {
+    const summary = RealTimeMarketDataService.getMarketSummary();
+    const topGainers = RealTimeMarketDataService.getTopGainers();
+    const topLosers = RealTimeMarketDataService.getTopLosers();
+
+    setMarketData({
+      ...summary,
+      topGainers: topGainers.map(stock => ({
+        symbol: stock.symbol,
+        name: `${stock.symbol} Limited`,
+        price: stock.ltp,
+        change: stock.percentageChange,
+        volume: stock.volume
+      })),
+      topLosers: topLosers.map(stock => ({
+        symbol: stock.symbol,
+        name: `${stock.symbol} Limited`,
+        price: stock.ltp,
+        change: stock.percentageChange,
+        volume: stock.volume
+      })),
+      marketStatus: {
+        isOpen: false,
+        status: 'Market is Closed',
+        nextActionTime: '11:00 AM Tomorrow'
+      },
+      currentTime: new Date().toLocaleTimeString(),
+      tradingHours: {
+        openTime: '11:00 AM',
+        closeTime: '3:00 PM',
+        tradingDays: 'Sun-Thu',
+        timeZone: 'Nepal Standard Time (NPT)'
+      }
+    });
+
+    setLastUpdated(new Date());
+  };
 
   const fetchMarketData = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setLastUpdated(new Date());
+      await RealTimeMarketDataService.refreshData();
+      loadMarketData();
       
       toast({
         title: language === 'ne' ? "लाइभ डाटा अपडेट भयो" : "Live Data Updated",
@@ -159,6 +159,8 @@ export const TopGainersLosers = ({ language = 'en' }: TopGainersLosersProps) => 
     }
     return volume.toLocaleString();
   };
+
+  if (!marketData) return <div>Loading...</div>;
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
@@ -198,12 +200,12 @@ export const TopGainersLosers = ({ language = 'en' }: TopGainersLosersProps) => 
             </div>
             <div className="flex items-center justify-between">
               <span className="text-gray-600">{t.marketCondition}:</span>
-              <Badge className="bg-green-100 text-green-800 border-green-200">
-                Open
+              <Badge className="bg-red-100 text-red-800 border-red-200">
+                Closed
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-600">{t.closeTime}:</span>
+              <span className="text-gray-600">Next Open:</span>
               <span className="font-semibold text-blue-800">{marketData.marketStatus.nextActionTime}</span>
             </div>
           </CardContent>
@@ -248,7 +250,7 @@ export const TopGainersLosers = ({ language = 'en' }: TopGainersLosersProps) => 
               <p className="text-2xl font-bold text-blue-600">{marketData.nepseIndex}</p>
               <p className="text-sm font-semibold text-green-600 flex items-center justify-center">
                 <ArrowUp className="w-3 h-3 mr-1" />
-                {formatChange(marketData.nepseChange)}
+                +{marketData.nepseChange} ({marketData.nepsePercentChange}%)
               </p>
             </div>
             
@@ -260,13 +262,13 @@ export const TopGainersLosers = ({ language = 'en' }: TopGainersLosersProps) => 
             
             <div className="text-center bg-white p-4 rounded-xl shadow-sm">
               <p className="text-sm font-medium text-gray-600 mb-1">{t.sharesTraded}</p>
-              <p className="text-lg font-bold text-purple-600">{marketData.sharesTraded}</p>
+              <p className="text-lg font-bold text-purple-600">{marketData.totalTradedShares}</p>
               <p className="text-xs text-gray-500">{t.volume}</p>
             </div>
             
             <div className="text-center bg-white p-4 rounded-xl shadow-sm">
               <p className="text-sm font-medium text-gray-600 mb-1">{t.companiesCount}</p>
-              <p className="text-lg font-bold text-orange-600">{marketData.companiesTraded}</p>
+              <p className="text-lg font-bold text-orange-600">{marketData.totalScriptsTraded}</p>
               <p className="text-xs text-gray-500">{t.active}</p>
             </div>
             

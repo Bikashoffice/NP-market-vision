@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { ChartUploadAnalysis } from "@/components/ChartUploadAnalysis";
 import { MarketResearch } from "@/components/MarketResearch";
 import { TopGainersLosers } from "@/components/TopGainersLosers";
@@ -15,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [language, setLanguage] = useState<'en' | 'ne'>('en');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const navigate = useNavigate();
 
   const texts = {
@@ -46,93 +49,78 @@ const Index = () => {
 
   const t = texts[language];
 
+  const handleTabChange = (tab: string) => {
+    if (tab === 'ipo-rights') {
+      navigate('/ipo-rights');
+    } else {
+      setActiveTab(tab);
+    }
+  };
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return <PredictionDashboard />;
+      case 'technical-analysis':
+        return <TechnicalAnalysis />;
+      case 'chart-analysis':
+        return <ChartUploadAnalysis />;
+      case 'research':
+        return <MarketResearch language={language} />;
+      case 'top-movers':
+        return <TopGainersLosers language={language} />;
+      case 'all-stocks':
+        return <AllStocksTable />;
+      default:
+        return <PredictionDashboard />;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  {t.title}
-                </h1>
-                <p className="text-sm text-gray-600">{t.subtitle}</p>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <AppSidebar 
+            activeTab={activeTab} 
+            onTabChange={handleTabChange}
+            language={language}
+          />
+          <SidebarInset>
+            {/* Header */}
+            <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+              <div className="container mx-auto px-4 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <SidebarTrigger />
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                      <BarChart3 className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        {t.title}
+                      </h1>
+                      <p className="text-sm text-gray-600">{t.subtitle}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <TimeDisplay />
+                    <LanguageSwitch currentLanguage={language} onLanguageChange={setLanguage} />
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                      <span>{t.liveData}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <TimeDisplay />
-              <LanguageSwitch currentLanguage={language} onLanguageChange={setLanguage} />
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span>{t.liveData}</span>
-              </div>
+
+            {/* Main Content */}
+            <div className="container mx-auto px-4 py-8">
+              {renderTabContent()}
             </div>
-          </div>
+          </SidebarInset>
         </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="dashboard" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:grid-cols-7">
-            <TabsTrigger value="dashboard" className="flex items-center space-x-2">
-              <BarChart3 className="w-4 h-4" />
-              <span>{t.dashboard}</span>
-            </TabsTrigger>
-            <TabsTrigger value="technical-analysis" className="flex items-center space-x-2">
-              <ChartCandlestick className="w-4 h-4" />
-              <span>{t.technicalAnalysis}</span>
-            </TabsTrigger>
-            <TabsTrigger value="chart-analysis" className="flex items-center space-x-2">
-              <Upload className="w-4 h-4" />
-              <span>{t.chartAnalysis}</span>
-            </TabsTrigger>
-            <TabsTrigger value="research" className="flex items-center space-x-2">
-              <Search className="w-4 h-4" />
-              <span>{t.research}</span>
-            </TabsTrigger>
-            <TabsTrigger value="top-movers" className="flex items-center space-x-2">
-              <TrendingUp className="w-4 h-4" />
-              <span>{t.topMovers}</span>
-            </TabsTrigger>
-            <TabsTrigger value="all-stocks" className="flex items-center space-x-2">
-              <Database className="w-4 h-4" />
-              <span>{t.allStocks}</span>
-            </TabsTrigger>
-            <TabsTrigger value="ipo-rights" className="flex items-center space-x-2" onClick={() => navigate('/ipo-rights')}>
-              <Building2 className="w-4 h-4" />
-              <span>{t.ipoRights}</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="dashboard" className="space-y-6">
-            <PredictionDashboard />
-          </TabsContent>
-
-          <TabsContent value="technical-analysis" className="space-y-6">
-            <TechnicalAnalysis />
-          </TabsContent>
-
-          <TabsContent value="chart-analysis" className="space-y-6">
-            <ChartUploadAnalysis />
-          </TabsContent>
-
-          <TabsContent value="research" className="space-y-6">
-            <MarketResearch language={language} />
-          </TabsContent>
-
-          <TabsContent value="top-movers" className="space-y-6">
-            <TopGainersLosers language="en" />
-          </TabsContent>
-
-          <TabsContent value="all-stocks" className="space-y-6">
-            <AllStocksTable />
-          </TabsContent>
-        </Tabs>
-      </div>
+      </SidebarProvider>
     </div>
   );
 };
