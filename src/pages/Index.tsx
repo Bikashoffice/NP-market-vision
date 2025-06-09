@@ -12,13 +12,11 @@ import { PredictionDashboard } from "@/components/PredictionDashboard";
 import { TechnicalAnalysis } from "@/components/TechnicalAnalysis";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { TimeDisplay } from "@/components/TimeDisplay";
-import { TrendingUp, TrendingDown, BarChart3, Search, Upload, Database, ChartCandlestick, Building2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { TrendingUp, TrendingDown, BarChart3, Search, Upload, Database, ChartCandlestick } from "lucide-react";
 
 const Index = () => {
   const [language, setLanguage] = useState<'en' | 'ne'>('en');
   const [activeTab, setActiveTab] = useState('dashboard');
-  const navigate = useNavigate();
 
   const texts = {
     en: {
@@ -30,8 +28,7 @@ const Index = () => {
       technicalAnalysis: "Technical Analysis",
       research: "Market Research",
       topMovers: "Top Movers",
-      allStocks: "All Stocks",
-      ipoRights: "IPO & Rights"
+      allStocks: "All Stocks"
     },
     ne: {
       title: "नेपाल स्टक प्रिडिक्टर",
@@ -42,19 +39,14 @@ const Index = () => {
       technicalAnalysis: "प्राविधिक विश्लेषण",
       research: "बजार अनुसन्धान",
       topMovers: "शीर्ष चलनेवाला",
-      allStocks: "सबै स्टकहरू",
-      ipoRights: "आईपीओ र राइट शेयर"
+      allStocks: "सबै स्टकहरू"
     }
   };
 
   const t = texts[language];
 
   const handleTabChange = (tab: string) => {
-    if (tab === 'ipo-rights') {
-      navigate('/ipo-rights');
-    } else {
-      setActiveTab(tab);
-    }
+    setActiveTab(tab);
   };
 
   const renderTabContent = () => {

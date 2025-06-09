@@ -1,5 +1,5 @@
 
-import { Calendar, Home, TrendingUp, Database, Upload, Search, ChartCandlestick, Building2 } from "lucide-react";
+import { Calendar, Home, TrendingUp, Database, Upload, Search, ChartCandlestick } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -26,8 +26,7 @@ export function AppSidebar({ activeTab, onTabChange, language }: AppSidebarProps
       chartAnalysis: "Chart Analysis", 
       research: "Market Research",
       topMovers: "Top Movers",
-      allStocks: "All Stocks",
-      ipoRights: "IPO & Rights"
+      allStocks: "All Stocks"
     },
     ne: {
       navigation: "नेभिगेसन",
@@ -36,8 +35,7 @@ export function AppSidebar({ activeTab, onTabChange, language }: AppSidebarProps
       chartAnalysis: "चार्ट विश्लेषण",
       research: "बजार अनुसन्धान", 
       topMovers: "शीर्ष चलनेवाला",
-      allStocks: "सबै स्टकहरू",
-      ipoRights: "आईपीओ र राइट शेयर"
+      allStocks: "सबै स्टकहरू"
     }
   };
 
@@ -50,7 +48,6 @@ export function AppSidebar({ activeTab, onTabChange, language }: AppSidebarProps
     { id: "research", title: t.research, icon: Search },
     { id: "top-movers", title: t.topMovers, icon: TrendingUp },
     { id: "all-stocks", title: t.allStocks, icon: Database },
-    { id: "ipo-rights", title: t.ipoRights, icon: Building2 },
   ];
 
   return (
