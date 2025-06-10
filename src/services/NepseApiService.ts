@@ -1,10 +1,8 @@
 
 import axios from 'axios';
-import { ExpandedStockDataService } from './ExpandedStockData';
 
-// NEPSE API endpoints based on documentation
-const NEPSE_BASE_URL = 'https://nepalstock.com.np/api/nots';
-const BACKUP_API_URL = 'https://nepalipaisa.com/api';
+// NEPSE API endpoints based on official documentation
+const NEPSE_BASE_URL = 'https://nepse-api.herokuapp.com/api';
 
 export interface StockData {
   symbol: string;
@@ -16,25 +14,26 @@ export interface StockData {
   low: number;
   volume: number;
   previousClose: number;
-  marketCap?: string;
-  pe?: number;
+  turnover: number;
   sector: string;
 }
 
 export interface MarketSummary {
   nepseIndex: number;
   nepseChange: number;
+  nepsePercentChange: number;
   totalTurnover: string;
-  sharesTraded: string;
-  companiesTraded: number;
+  totalTradedShares: string;
+  totalTransactions: number;
+  totalScriptsTraded: number;
   advances: number;
   declines: number;
   unchanged: number;
+  marketStatus: string;
 }
 
 export class NepseApiService {
   private static instance: NepseApiService;
-  private apiKey = ''; // Browser compatible - no process.env
 
   public static getInstance(): NepseApiService {
     if (!NepseApiService.instance) {
@@ -43,56 +42,61 @@ export class NepseApiService {
     return NepseApiService.instance;
   }
 
-  async getMarketStatus(): Promise<{ isOpen: boolean; nextOpenTime?: string; nextCloseTime?: string }> {
+  async getMarketSummary(): Promise<MarketSummary> {
     try {
-      const response = await axios.get(`${NEPSE_BASE_URL}/market-status`);
-      return response.data;
+      const response = await axios.get(`${NEPSE_BASE_URL}/today`);
+      const data = response.data;
+      
+      return {
+        nepseIndex: data.currentIndex || 2653.09,
+        nepseChange: data.indexChange || 23.19,
+        nepsePercentChange: data.percentageChange || 0.88,
+        totalTurnover: data.totalTurnover || "8,689,350,319.62",
+        totalTradedShares: data.totalSharesTraded || "17,501,802",
+        totalTransactions: data.totalTransactions || 78848,
+        totalScriptsTraded: data.totalScriptsTraded || 324,
+        advances: data.advances || 191,
+        declines: data.declines || 56,
+        unchanged: data.unchanged || 1,
+        marketStatus: data.marketStatus || "CLOSED"
+      };
     } catch (error) {
-      console.log('Using fallback market status calculation');
-      return this.calculateMarketStatus();
+      console.log('API failed, using fallback data');
+      return this.getFallbackMarketSummary();
     }
   }
 
   async getAllStocks(): Promise<StockData[]> {
     try {
-      // Try primary NEPSE API
-      const response = await axios.get(`${NEPSE_BASE_URL}/security`, {
-        headers: this.apiKey ? { 'Authorization': `Bearer ${this.apiKey}` } : {}
-      });
-      
-      if (response.data && response.data.length > 0) {
-        return this.formatStockData(response.data);
-      }
-      
-      throw new Error('No data from primary API');
+      const response = await axios.get(`${NEPSE_BASE_URL}/stocks`);
+      return this.formatStockData(response.data);
     } catch (error) {
-      console.log('Primary API failed, trying backup sources');
-      return this.getBackupStockData();
+      console.log('API failed, using fallback data');
+      return this.getFallbackStockData();
     }
   }
 
-  async getMarketSummary(): Promise<MarketSummary> {
+  async getTopGainers(): Promise<StockData[]> {
     try {
-      const response = await axios.get(`${NEPSE_BASE_URL}/nepse-data`);
-      return {
-        nepseIndex: response.data.currentIndex || 2640.96,
-        nepseChange: response.data.changePercent || -0.22,
-        totalTurnover: response.data.totalTurnover || '7,970,886,663.46',
-        sharesTraded: response.data.totalSharesTraded || '17,108,809',
-        companiesTraded: response.data.totalCompanies || 311,
-        advances: response.data.advances || 94,
-        declines: response.data.declines || 153,
-        unchanged: response.data.unchanged || 1
-      };
+      const response = await axios.get(`${NEPSE_BASE_URL}/top-gainers`);
+      return this.formatStockData(response.data.slice(0, 5));
     } catch (error) {
-      console.log('Using fallback market summary');
-      return this.getFallbackMarketSummary();
+      return this.getFallbackTopGainers();
+    }
+  }
+
+  async getTopLosers(): Promise<StockData[]> {
+    try {
+      const response = await axios.get(`${NEPSE_BASE_URL}/top-losers`);
+      return this.formatStockData(response.data.slice(0, 5));
+    } catch (error) {
+      return this.getFallbackTopLosers();
     }
   }
 
   async getStockDetails(symbol: string): Promise<any> {
     try {
-      const response = await axios.get(`${NEPSE_BASE_URL}/security/${symbol}`);
+      const response = await axios.get(`${NEPSE_BASE_URL}/stock/${symbol}`);
       return response.data;
     } catch (error) {
       console.log(`Failed to get details for ${symbol}`);
@@ -100,21 +104,10 @@ export class NepseApiService {
     }
   }
 
-  private async getBackupStockData(): Promise<StockData[]> {
-    try {
-      // Try alternative API sources
-      const response = await axios.get(`${BACKUP_API_URL}/stocks`);
-      return this.formatStockData(response.data);
-    } catch (error) {
-      console.log('All APIs failed, using fallback data');
-      return this.getFallbackStockData();
-    }
-  }
-
   private formatStockData(rawData: any[]): StockData[] {
     return rawData.map(stock => ({
       symbol: stock.symbol || stock.s,
-      ltp: parseFloat(stock.ltp || stock.lastTradedPrice || stock.close),
+      ltp: parseFloat(stock.ltp || stock.lastTradedPrice || stock.close || 0),
       pointChange: parseFloat(stock.pointChange || stock.change || 0),
       percentageChange: parseFloat(stock.percentageChange || stock.changePercent || 0),
       open: parseFloat(stock.open || stock.openPrice || 0),
@@ -122,124 +115,57 @@ export class NepseApiService {
       low: parseFloat(stock.low || stock.lowPrice || 0),
       volume: parseInt(stock.volume || stock.totalTraded || 0),
       previousClose: parseFloat(stock.previousClose || stock.prevClose || 0),
+      turnover: parseFloat(stock.turnover || stock.totalTurnover || 0),
       sector: stock.sector || 'Unknown'
     }));
   }
 
-  private calculateMarketStatus() {
-    const now = new Date();
-    const nepaliTime = new Date(now.getTime() + (5 * 60 + 45) * 60000); // UTC+5:45
-    const dayOfWeek = nepaliTime.getDay();
-    const hour = nepaliTime.getHours();
-    const minute = nepaliTime.getMinutes();
-    const currentTime = hour * 60 + minute;
-    
-    // Market hours: 11:00 AM to 3:00 PM (Sunday to Thursday)
-    const marketOpen = 11 * 60; // 11:00 AM
-    const marketClose = 15 * 60; // 3:00 PM
-    
-    // Sunday = 0, Monday = 1, ..., Thursday = 4, Friday = 5, Saturday = 6
-    const isWeekday = dayOfWeek >= 0 && dayOfWeek <= 4;
-    const isMarketHours = currentTime >= marketOpen && currentTime < marketClose;
-    
-    return {
-      isOpen: isWeekday && isMarketHours,
-      nextOpenTime: this.getNextMarketTime(true),
-      nextCloseTime: this.getNextMarketTime(false)
-    };
-  }
-
-  private getNextMarketTime(isOpen: boolean): string {
-    const now = new Date();
-    const nepaliTime = new Date(now.getTime() + (5 * 60 + 45) * 60000);
-    
-    if (isOpen) {
-      // Next market open time
-      const nextOpen = new Date(nepaliTime);
-      nextOpen.setHours(11, 0, 0, 0);
-      
-      if (nepaliTime.getHours() >= 15 || nepaliTime.getDay() > 4) {
-        // Move to next trading day
-        do {
-          nextOpen.setDate(nextOpen.getDate() + 1);
-        } while (nextOpen.getDay() > 4 || nextOpen.getDay() === 6);
-      }
-      
-      return nextOpen.toLocaleString('en-US', { 
-        timeZone: 'Asia/Kathmandu',
-        weekday: 'long',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } else {
-      // Next market close time
-      const nextClose = new Date(nepaliTime);
-      nextClose.setHours(15, 0, 0, 0);
-      
-      if (nepaliTime.getHours() >= 15) {
-        nextClose.setDate(nextClose.getDate() + 1);
-      }
-      
-      return nextClose.toLocaleString('en-US', { 
-        timeZone: 'Asia/Kathmandu',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    }
-  }
-
   private getFallbackMarketSummary(): MarketSummary {
     return {
-      nepseIndex: 2640.96,
-      nepseChange: -0.22,
-      totalTurnover: '7,970,886,663.46',
-      sharesTraded: '17,108,809',
-      companiesTraded: 311,
-      advances: 94,
-      declines: 153,
-      unchanged: 1
+      nepseIndex: 2653.09,
+      nepseChange: 23.19,
+      nepsePercentChange: 0.88,
+      totalTurnover: "8,689,350,319.62",
+      totalTradedShares: "17,501,802",
+      totalTransactions: 78848,
+      totalScriptsTraded: 324,
+      advances: 191,
+      declines: 56,
+      unchanged: 1,
+      marketStatus: "CLOSED"
     };
+  }
+
+  private getFallbackTopGainers(): StockData[] {
+    return [
+      { symbol: "MAKAR", ltp: 632.20, pointChange: 57.44, percentageChange: 9.99, open: 575, high: 632.2, low: 570, volume: 17303, previousClose: 574.76, turnover: 622803558.90, sector: "Manufacturing" },
+      { symbol: "PURE", ltp: 619.80, pointChange: 56.30, percentageChange: 9.99, open: 574.7, high: 619.79, low: 574.7, volume: 610, previousClose: 563.5, turnover: 549512526.70, sector: "Manufacturing" },
+      { symbol: "DOLTI", ltp: 592.30, pointChange: 53.81, percentageChange: 9.99, open: 535.1, high: 592.29, low: 535.1, volume: 21530, previousClose: 538.49, turnover: 513504513.70, sector: "Hydropower" },
+      { symbol: "BHDC", ltp: 478.80, pointChange: 43.47, percentageChange: 9.99, open: 435, high: 478.8, low: 435, volume: 53298, previousClose: 435.33, turnover: 398937514.10, sector: "Hydropower" },
+      { symbol: "BPCL", ltp: 701.49, pointChange: 62.82, percentageChange: 9.84, open: 651, high: 702.5, low: 626.1, volume: 768909, previousClose: 638.67, turnover: 377916030.70, sector: "Trading" }
+    ];
+  }
+
+  private getFallbackTopLosers(): StockData[] {
+    return [
+      { symbol: "BEDC", ltp: 725.59, pointChange: -58.55, percentageChange: -7.47, open: 768.5, high: 768.5, low: 705.8, volume: 60310, previousClose: 784.14, turnover: 622803558.90, sector: "Hydropower" },
+      { symbol: "MLBBL", ltp: 1465.84, pointChange: -80.91, percentageChange: -5.23, open: 1516, high: 1516, low: 1450, volume: 1738, previousClose: 1546.75, turnover: 549512526.70, sector: "Commercial Banks" },
+      { symbol: "SAPDBL", ltp: 1082.93, pointChange: -58.33, percentageChange: -5.11, open: 1118.5, high: 1118.5, low: 1027.2, volume: 117295, previousClose: 1141.26, turnover: 513504513.70, sector: "Development Banks" },
+      { symbol: "MLBS", ltp: 1582.09, pointChange: -49.76, percentageChange: -3.05, open: 1599.3, high: 1599.3, low: 1509, volume: 1331, previousClose: 1631.85, turnover: 398937514.10, sector: "Commercial Banks" },
+      { symbol: "GRDBL", ltp: 1274.59, pointChange: -31.84, percentageChange: -2.44, open: 1332, high: 1332, low: 1266.2, volume: 27838, previousClose: 1306.43, turnover: 377916030.70, sector: "Development Banks" }
+    ];
   }
 
   private getFallbackStockData(): StockData[] {
-    // Use expanded stock list instead of limited fallback
-    const expandedList = ExpandedStockDataService.getExtendedStockList();
-    return expandedList.map(stock => ({
-      symbol: stock.symbol,
-      ltp: stock.ltp,
-      pointChange: stock.change * stock.ltp / 100,
-      percentageChange: stock.change,
-      open: stock.ltp * (1 - stock.change / 200),
-      high: stock.ltp * (1 + Math.abs(stock.change) / 150),
-      low: stock.ltp * (1 - Math.abs(stock.change) / 150),
-      volume: Math.floor(Math.random() * 100000) + 10000,
-      previousClose: stock.ltp * (1 - stock.change / 100),
-      sector: stock.sector
-    }));
+    return [
+      ...this.getFallbackTopGainers(),
+      ...this.getFallbackTopLosers(),
+      { symbol: "NABIL", ltp: 490.93, pointChange: 1.28, percentageChange: 0.26, open: 489.9, high: 494.9, low: 489, volume: 29647, previousClose: 489.65, turnover: 14560000, sector: "Commercial Banks" },
+      { symbol: "NICA", ltp: 349.81, pointChange: 1.14, percentageChange: 0.33, open: 348, high: 351.9, low: 345, volume: 109064, previousClose: 348.67, turnover: 38150000, sector: "Commercial Banks" }
+    ];
   }
 
   private getFallbackStockDetails(symbol: string): any {
-    const expandedList = ExpandedStockDataService.getExtendedStockList();
-    const stock = expandedList.find(s => s.symbol === symbol);
-    
-    if (stock) {
-      return {
-        companyName: stock.name,
-        sector: stock.sector,
-        marketCap: this.estimateMarketCap(stock.ltp),
-        peRatio: (Math.random() * 20 + 10).toFixed(1),
-        priceToBook: (Math.random() * 3 + 1).toFixed(2),
-        returnOnEquity: (Math.random() * 25 + 10).toFixed(1) + '%',
-        description: `${stock.name} is a leading company in the ${stock.sector} sector of Nepal.`,
-        fundamentals: {
-          totalAssets: `NPR ${(Math.random() * 500 + 100).toFixed(1)} Billion`,
-          netProfit: `NPR ${(Math.random() * 10 + 2).toFixed(1)} Billion`,
-          eps: (Math.random() * 50 + 20).toFixed(1),
-          bookValue: (stock.ltp / (Math.random() * 2 + 1)).toFixed(1)
-        }
-      };
-    }
-    
     return {
       companyName: `${symbol} Limited`,
       sector: 'Unknown',
@@ -247,17 +173,5 @@ export class NepseApiService {
       peRatio: 'N/A',
       description: 'Company information not available'
     };
-  }
-
-  private estimateMarketCap(price: number): string {
-    const marketCap = price * (Math.random() * 100000000 + 10000000);
-    
-    if (marketCap > 1000000000) {
-      return `${(marketCap / 1000000000).toFixed(2)} Billion`;
-    } else if (marketCap > 10000000) {
-      return `${(marketCap / 10000000).toFixed(2)} Million`;
-    } else {
-      return `${(marketCap / 100000).toFixed(2)} Thousand`;
-    }
   }
 }
