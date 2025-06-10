@@ -98,6 +98,10 @@
   .bg-gray-750 {
     background-color: rgb(55 65 81 / 0.7);
   }
+
+  .text-warning {
+    @apply text-orange-400;
+  }
 }
 
 @layer components {
