@@ -1,3 +1,4 @@
+
 import { NepalStockService, LiveMarketData, LiveStockData } from './NepalStockService';
 
 export interface RealTimeStockData extends LiveStockData {}
@@ -22,8 +23,8 @@ export class RealTimeMarketDataService {
       return {
         ...liveData,
         nepseIndex: liveData.nepseIndex,
-        nepseChange: liveData.change,
-        nepsePercentChange: liveData.percentChange,
+        change: liveData.change,
+        percentChange: liveData.percentChange,
         totalTurnover: liveData.turnover,
         totalTradedShares: liveData.volume,
         totalTransactions: 78848,
@@ -79,8 +80,6 @@ export class RealTimeMarketDataService {
   private static getFallbackMarketSummary(): RealTimeMarketSummary {
     return {
       nepseIndex: 2653.09,
-      nepseChange: 23.19,
-      nepsePercentChange: 0.88,
       change: 23.19,
       percentChange: 0.88,
       high: 2670.28,

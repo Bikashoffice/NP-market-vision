@@ -76,15 +76,20 @@ export const TopGainersLosers = ({ language = 'en' }: TopGainersLosersProps) => 
   };
 
   const formatChange = (change: number) => {
+    if (typeof change !== 'number' || isNaN(change)) return '0.00%';
     const sign = change >= 0 ? '+' : '';
     return `${sign}${change.toFixed(2)}%`;
   };
 
   const formatPrice = (price: number) => {
+    if (typeof price !== 'number' || isNaN(price)) return 'Rs. 0';
     return `Rs. ${price.toLocaleString()}`;
   };
 
-  const formatVolume = (volume: number) => {
+  const formatVolume = (volume: number | undefined) => {
+    if (typeof volume !== 'number' || isNaN(volume) || volume === undefined || volume === null) {
+      return '0';
+    }
     if (volume > 1000000) return `${(volume / 1000000).toFixed(1)}M`;
     if (volume > 1000) return `${(volume / 1000).toFixed(1)}K`;
     return volume.toLocaleString();
@@ -133,8 +138,8 @@ export const TopGainersLosers = ({ language = 'en' }: TopGainersLosersProps) => 
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-1">{t.nepseIndex}</p>
               <p className="text-2xl font-bold text-foreground">{marketData.summary.nepseIndex}</p>
-              <p className={`text-sm font-medium ${marketData.summary.nepseChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatChange(marketData.summary.nepsePercentChange)}
+              <p className={`text-sm font-medium ${marketData.summary.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatChange(marketData.summary.percentChange)}
               </p>
             </div>
           </CardContent>
@@ -171,12 +176,12 @@ export const TopGainersLosers = ({ language = 'en' }: TopGainersLosersProps) => 
               <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                 <div>
                   <p className="font-medium text-foreground">{stock.symbol}</p>
-                  <p className="text-sm text-muted-foreground">{formatVolume(stock.volume)}</p>
+                  <p className="text-sm text-muted-foreground">{formatVolume(stock.qty)}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-medium text-foreground">{formatPrice(stock.ltp)}</p>
                   <Badge variant="secondary" className="bg-green-100 text-green-800">
-                    {formatChange(stock.percentageChange)}
+                    {formatChange(stock.percentChange)}
                   </Badge>
                 </div>
               </div>
@@ -194,12 +199,12 @@ export const TopGainersLosers = ({ language = 'en' }: TopGainersLosersProps) => 
               <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                 <div>
                   <p className="font-medium text-foreground">{stock.symbol}</p>
-                  <p className="text-sm text-muted-foreground">{formatVolume(stock.volume)}</p>
+                  <p className="text-sm text-muted-foreground">{formatVolume(stock.qty)}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-medium text-foreground">{formatPrice(stock.ltp)}</p>
                   <Badge variant="secondary" className="bg-red-100 text-red-800">
-                    {formatChange(stock.percentageChange)}
+                    {formatChange(stock.percentChange)}
                   </Badge>
                 </div>
               </div>
