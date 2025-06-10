@@ -100,7 +100,7 @@
   }
 
   .text-warning {
-    @apply text-orange-400;
+    @apply text-blue-400;
   }
 }
 

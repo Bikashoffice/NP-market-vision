@@ -66,9 +66,9 @@ export default {
 				gray: {
 					750: 'rgb(55 65 81 / 0.7)',
 				},
-				orange: {
-					400: '#fb923c',
-					500: '#f97316',
+				blue: {
+					400: '#60a5fa',
+					500: '#3b82f6',
 				}
 			},
 			borderRadius: {
