@@ -51,10 +51,10 @@ export function AppSidebar({ activeTab, onTabChange, language }: AppSidebarProps
   ];
 
   return (
-    <Sidebar>
-      <SidebarContent>
+    <Sidebar className="bg-gray-900 border-gray-800">
+      <SidebarContent className="bg-gray-900">
         <SidebarGroup>
-          <SidebarGroupLabel>{t.navigation}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-gray-400 font-medium">{t.navigation}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -62,6 +62,13 @@ export function AppSidebar({ activeTab, onTabChange, language }: AppSidebarProps
                   <SidebarMenuButton 
                     isActive={activeTab === item.id}
                     onClick={() => onTabChange(item.id)}
+                    className={`
+                      hover:bg-gray-800 text-gray-300 hover:text-white transition-colors
+                      ${activeTab === item.id 
+                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                        : ''
+                      }
+                    `}
                   >
                     <item.icon className="w-4 h-4" />
                     <span>{item.title}</span>
